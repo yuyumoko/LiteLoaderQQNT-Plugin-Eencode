@@ -63,13 +63,16 @@
               addFormatMsg("imag", uploadResult[0]);
               hasImage = true;
             } catch (error) {
+              if (error.message.includes("reply was never sent")) {
+                console.log("用户取消");
+                return;
+              }
               Swal.fire({
                 icon: "error",
                 title: "上传失败",
                 text: "图片上传失败, 请检查网络",
               });
-              new Error(error);
-              return;
+              console.log(error.message);
             }
             break;
           case "#text":
@@ -123,10 +126,13 @@
     if (element.innerText.trim() === "") return;
 
     try {
+      const encodeData = await encodeMessage(element, key, (count) => setSendButton(true, count));
+      if (!encodeData) return;
+
       const elements = [
         {
           type: "text",
-          content: await encodeMessage(element, key, (count) => setSendButton(true, count)),
+          content: encodeData,
         },
       ];
       await LLAPI.sendMessage(peer, elements);
