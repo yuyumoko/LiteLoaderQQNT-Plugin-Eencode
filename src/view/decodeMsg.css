@@ -10,6 +10,10 @@
     margin: 3px 3px 15px
 }
 
+.eencode-send-button {
+    margin-right: 10px;
+}
+
 .hidden {
     visibility: hidden;
 }
