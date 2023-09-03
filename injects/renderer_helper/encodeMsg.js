@@ -24,11 +24,11 @@
     });
   }
 
-  function setSendButton(isSend) {
+  function setSendButton(isSend, processNum) {
     const buttonEncode = document.querySelector(".eencode-send-button");
     if (isSend) {
       buttonEncode.classList.add("send--disabled");
-      buttonEncode.innerText = "正在加密";
+      buttonEncode.innerText = `正在加密[${processNum}]`;
     } else {
       buttonEncode.classList.remove("send--disabled");
       buttonEncode.innerText = "加密发送";
@@ -122,12 +122,11 @@
   async function sendEncodeMessage(element, key, peer) {
     if (element.innerText.trim() === "") return;
 
-    setSendButton(true);
     try {
       const elements = [
         {
           type: "text",
-          content: await encodeMessage(element, key),
+          content: await encodeMessage(element, key, (count) => setSendButton(true, count)),
         },
       ];
       await LLAPI.sendMessage(peer, elements);

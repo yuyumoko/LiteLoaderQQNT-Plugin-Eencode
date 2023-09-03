@@ -17,6 +17,8 @@ let cached = {
   AESKey: "",
 };
 
+let currentRequest;
+
 // 加载插件时触发
 async function onLoad(plugin) {
   const config = new Config(plugin.path.data);
@@ -39,6 +41,7 @@ async function onLoad(plugin) {
             reject(error);
           }
         });
+        currentRequest = r;
 
         const form = r.form();
         form.append("MAX_FILE_SIZE", "8388608");
@@ -72,6 +75,8 @@ async function onLoad(plugin) {
       return {};
     }
   });
+
+  ipcHandle.fn("AbortCurrentRequest", (event) => currentRequest && currentRequest.abort());
 
   ipcHandle.fn("GetConfig", (event) => config.load());
   ipcHandle.fn("GetDefaultConfig", (event) => Config.default);

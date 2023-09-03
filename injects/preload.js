@@ -19,6 +19,8 @@ contextBridge.exposeInMainWorld(slug, {
       host,
       imgUrls
     ),
+  
+  AbortCurrentRequest: () => ipcRenderer.invoke(get_fn_key("AbortCurrentRequest")),
 
   GetConfig: () => ipcRenderer.invoke(get_fn_key("GetConfig")),
   GetDefaultConfig: () => ipcRenderer.invoke(get_fn_key("GetDefaultConfig")),

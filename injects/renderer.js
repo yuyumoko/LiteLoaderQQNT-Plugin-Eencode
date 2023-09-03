@@ -38,20 +38,28 @@ async function initSendButton() {
   initSendButtonFlag = true;
 
   const buttonHtmlText = await requireApi.read("view/SendButton.html");
-
   const operation = document.querySelector(".operation");
   operation.insertAdjacentHTML("afterbegin", buttonHtmlText);
 
   const buttonEncode = document.querySelector(".eencode-send-button");
+  const cancelButtonEncode = document.querySelector(".eencode-cancel-send");
+
   buttonEncode.addEventListener("click", async () => {
     const ck_editor = document.querySelector(".ck-editor__main");
     const p_editor = ck_editor.firstElementChild;
 
     const cached = await eencode.GetCache();
     const peer = await LLAPI.getPeer();
-
+    cancelButtonEncode.parentNode.parentNode.classList.remove("hidden");
     await encodeMsgAPI.sendEncodeMessage(p_editor, cached.AESKey, peer);
   });
+
+  cancelButtonEncode.addEventListener("click", async () => {
+    await eencode.AbortCurrentRequest();
+    encodeMsgAPI.setSendButton(false);
+    cancelButtonEncode.parentNode.parentNode.classList.add("hidden");
+  });
+
 }
 
 // 页面加载完成时触发
