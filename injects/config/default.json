@@ -1,0 +1,26 @@
+{
+    "autoDecrypt": true,
+    "groupEncryptMode": "normal",
+    "showConfig": {
+        "encryptData": true,
+        "decryptPrefix": "已解密:"
+    },
+    "groupEncryptType": {
+        "normal": "AES",
+        "groupId": "AES-ID",
+        "groupId-SenderId": "AES-ID-SID"
+    },
+    "encryptConfig": {
+        "AES": {
+            "prefix": "pge:",
+            "iv_length": 16,
+            "key": "12345678123412341234123456781234"
+        },
+        "RSA": {
+            "prefix": "gpg:",
+            "key_length": 512,
+            "publicKey": "",
+            "privateKey": ""
+        }
+    }
+}

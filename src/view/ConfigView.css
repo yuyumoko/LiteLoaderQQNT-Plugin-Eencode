@@ -1,0 +1,31 @@
+
+.ops-selects {
+  display: flex;
+  gap: 8px;
+}
+
+/* 数据目录 */
+.path-input {
+  align-self: normal;
+  flex: 1;
+  border-radius: 4px;
+  margin-left: 16px;
+  transition: all 100ms ease-out;
+}
+
+.path-input:focus {
+  padding-right: 5px;
+  background-color: var(--overlay_active);
+}
+
+@media (prefers-color-scheme: light) {
+  .text_color {
+      color: black;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .text_color {
+      color: white;
+  }
+}
