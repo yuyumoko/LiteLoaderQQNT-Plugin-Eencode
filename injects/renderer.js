@@ -52,6 +52,7 @@ async function initSendButton() {
     const peer = await LLAPI.getPeer();
     cancelButtonEncode.parentNode.parentNode.classList.remove("hidden");
     await encodeMsgAPI.sendEncodeMessage(p_editor, cached.AESKey, peer);
+    cancelButtonEncode.parentNode.parentNode.classList.add("hidden");
   });
 
   cancelButtonEncode.addEventListener("click", async () => {
