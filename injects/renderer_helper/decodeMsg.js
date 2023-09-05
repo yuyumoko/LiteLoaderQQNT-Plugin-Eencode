@@ -112,7 +112,7 @@
       return;
     }
     rawText = rawText.slice(4);
-
+    console.log(rawText)
     const isImgStart = rawText.indexOf("img-start:\n") === 0;
 
     if (isImgStart) {
