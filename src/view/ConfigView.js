@@ -142,6 +142,8 @@
     "showConfig.encryptData"
   );
 
+  initSwitch("#autoDeleteCache", config.autoDeleteCache, "autoDeleteCache");
+
   view
     .querySelector("#msg-encode-github-url")
     .addEventListener("click", async () => {

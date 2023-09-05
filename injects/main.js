@@ -27,9 +27,6 @@ let currentRequest;
 // 加载插件时触发
 async function onLoad(plugin) {
   const cachePath = plugin.path.cache;
-  if (!fs.existsSync(cachePath)) {
-    fs.mkdirSync(cachePath, { recursive: true });
-  }
   
   const config = new Config(plugin.path.data);
 
@@ -38,6 +35,25 @@ async function onLoad(plugin) {
   const configData = config.load();
   cached.autoDecrypt = configData.autoDecrypt;
   cached.AESKey = configData.encryptConfig.AES.key;
+
+
+  if (configData.autoDeleteCache && fs.existsSync(cachePath)) {
+    try {
+      fs.rmSync(cachePath, { recursive: true });
+    } catch (error) {
+      dialog.showMessageBox({
+        type: "warning",
+        title: "警告",
+        message: `歪比巴卜插件删除文件失败, 可能是没权限: ${error.message}`,
+        buttons: ["确定"],
+        cancelId: 1,
+      });
+    }
+  }
+
+  if (!fs.existsSync(cachePath)) {
+    fs.mkdirSync(cachePath, { recursive: true });
+  }
 
   ipcHandle.fn("OpenWeb", (event, url) => shell.openExternal(url));
 

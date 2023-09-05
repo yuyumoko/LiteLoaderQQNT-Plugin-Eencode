@@ -1,5 +1,6 @@
 {
     "autoDecrypt": true,
+    "autoDeleteCache": true,
     "groupEncryptMode": "normal",
     "showConfig": {
         "encryptData": true,
