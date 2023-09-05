@@ -1,8 +1,8 @@
 () => {
-  async function uploadImage(imgUrls) {
+  async function uploadImage(imgUrls, isFile) {
     const uploadUrl = "https://img.chkaja.com/ajaximg.php";
 
-    return eencode.uploadChkajaImage(uploadUrl, imgUrls).then((data) => {
+    return eencode.uploadChkajaImage(uploadUrl, imgUrls, isFile).then((data) => {
       if (data === "") {
         Swal.fire({
           icon: "error",
@@ -81,21 +81,33 @@
               .call(msgText, (c) => c.charCodeAt() !== 8288)
               .join("");
             if (msgText === "") break;
-            addFormatMsg("text", encodeURIComponent(msgText));
+            addFormatMsg("text", (msgText));
 
             hasText = true;
             break;
           case "MSG-FILE":
-            addFormatMsg(
-              "file",
-              encodeURIComponent(msg.lastElementChild.dataset.url)
-            );
+            try {
+              const filePath = msg.lastElementChild.dataset.url.split('\\').join('/')
+              const uploadResult = await uploadImage([filePath], true);
+              addFormatMsg("file", uploadResult[0]);
 
-            hasFile = true;
-            break;
+              hasFile = true;
+              break;
+            } catch (error) {
+              if (error.message.includes("reply was never sent")) {
+                console.log("用户取消");
+                return;
+              }
+              Swal.fire({
+                icon: "error",
+                title: "上传失败",
+                text: "文件上传失败, 可能是太大, 限制10MB以内",
+              });
+              console.log(error.message);
+            }
         }
       }
-      addFormatMsg("text", encodeURIComponent("\n"));
+      addFormatMsg("text", ("\n"));
     }
     formatMsg.pop();
 

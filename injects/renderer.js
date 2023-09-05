@@ -1,5 +1,5 @@
 // 运行在 Electron 渲染进程 下的页面脚本
-const { plugin: pluginPath, data: dataPath } = LiteLoader.plugins.eencode.path;
+const { plugin: pluginPath, data: dataPath, cache: cachePath } = LiteLoader.plugins.eencode.path;
 
 class RequireApi {
   constructor(pluginPath) {

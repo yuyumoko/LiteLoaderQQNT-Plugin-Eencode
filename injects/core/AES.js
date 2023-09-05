@@ -1,3 +1,7 @@
+const { createReadStream, createWriteStream } = require('fs');
+const { pipeline } = require('stream');
+const { promisify } = require('util');
+
 const crypto = require("crypto");
 const algorithm = "aes-256-ctr";
 
@@ -19,7 +23,24 @@ function decrypt(text, key) {
   return decrypted.toString();
 }
 
+function encryptFile(rawFile, output, key, iv) {
+  const readStream = createReadStream(rawFile);
+  const writeStream = createWriteStream(output);
+  const transformStream = crypto.createCipheriv(algorithm, key, iv);
+  return promisify(pipeline)(readStream, transformStream, writeStream)
+}
+
+function decryptFile(encryptFile, output, key, iv) {
+  const readStream = createReadStream(encryptFile);
+  const writeStream = createWriteStream(output);
+  const transformStream = crypto.createDecipheriv(algorithm, key, iv);
+  return promisify(pipeline)(readStream, transformStream, writeStream);
+}
+
+
 module.exports = {
   encrypt,
   decrypt,
+  encryptFile,
+  decryptFile
 };

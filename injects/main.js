@@ -1,4 +1,4 @@
-const { ipcMain, shell, dialog } = require("electron");
+const { ipcMain, shell, dialog, BrowserWindow } = require("electron");
 
 const fs = require("fs");
 const path = require("path");
@@ -7,10 +7,15 @@ const request = require("request");
 const manifest = require("../manifest.json");
 
 const IpcHandle = require("./utils/ipcHandle");
-const imageInfo = require("./core/imageInfo");
+const { imageInfo, checkSig } = require("./core/imageInfo");
 const Config = require("./core/config");
 
 const AES = require("./core/AES");
+
+const PNG_HEARD = Buffer.from([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49,
+  0x48, 0x44, 0x52,
+]);
 
 let cached = {
   autoDecrypt: true,
@@ -21,6 +26,11 @@ let currentRequest;
 
 // 加载插件时触发
 async function onLoad(plugin) {
+  const cachePath = plugin.path.cache;
+  if (!fs.existsSync(cachePath)) {
+    fs.mkdirSync(cachePath, { recursive: true });
+  }
+  
   const config = new Config(plugin.path.data);
 
   const ipcHandle = new IpcHandle(manifest.slug);
@@ -31,7 +41,7 @@ async function onLoad(plugin) {
 
   ipcHandle.fn("OpenWeb", (event, url) => shell.openExternal(url));
 
-  ipcHandle.fn("uploadChkajaImage", (event, host, imgUrls) => {
+  ipcHandle.fn("uploadChkajaImage", (event, host, imgUrls, isFile = null) => {
     try {
       return new Promise((resolve, reject) => {
         const r = request.post(host, function (error, response, body) {
@@ -58,7 +68,13 @@ async function onLoad(plugin) {
             filename = filename.replace(".null", "." + format);
           }
 
-          form.append("files[]", fs.createReadStream(url), {
+          let imgData = fs.readFileSync(url);
+          if (isFile) {
+            imgData = Buffer.concat([PNG_HEARD, imgData]);
+            filename += ".png";
+          }
+
+          form.append("files[]", imgData, {
             filename,
           });
         }
@@ -78,6 +94,54 @@ async function onLoad(plugin) {
 
   ipcHandle.fn("AbortCurrentRequest", (event) => currentRequest && currentRequest.abort());
 
+  ipcHandle.fn("DownloadFile", async (event, url, filename) => {
+    return new Promise((resolve, reject) => {
+      const fileDir = path.join(plugin.path.cache, "download");
+      let filePath = path.join(fileDir, filename);
+
+      if (fs.existsSync(filePath)) {
+        resolve(filePath);
+        return;
+      }
+
+      if (!fs.existsSync(fileDir)) {
+        fs.mkdirSync(fileDir, { recursive: true });
+      }
+
+      request
+        .get(url)
+        .on("error", (err) => {
+          dialog.showMessageBox({
+            type: "warning",
+            title: "警差",
+            message: "下載失敗",
+            buttons: ["确定"],
+            cancelId: 1,
+          });
+        })
+        .pipe(fs.createWriteStream(filePath))
+        .on("finish", () => {
+          resolve(filePath);
+        });
+    });
+  });
+
+  ipcHandle.fn("FixVideoFile", async (event, filePath) => {
+    let rawData = fs.readFileSync(filePath);
+    if (!checkSig(rawData, 0, [0x89, 0x50, 0x4e, 0x47])) {
+      return;
+    }
+    fs.unlinkSync(filePath);
+    rawData = rawData.subarray(
+      PNG_HEARD.length,
+      rawData.length - PNG_HEARD.length
+    );
+    fs.writeFileSync(filePath, rawData);
+  });
+
+  ipcHandle.fn("readFileSync", (event, filePath) => fs.readFileSync(filePath));
+  ipcHandle.fn("existsSync", (event, filePath) => fs.existsSync(filePath));
+
   ipcHandle.fn("GetConfig", (event) => config.load());
   ipcHandle.fn("GetDefaultConfig", (event) => Config.default);
   ipcHandle.fn("SetConfig", (event, name, data) => config.set(name, data));
@@ -96,6 +160,43 @@ async function onLoad(plugin) {
     AES.encrypt(text, key, configData.encryptConfig.AES.iv_length)
   );
   ipcHandle.fn("AES_decrypt", (event, text, key) => AES.decrypt(text, key));
+
+  ipcHandle.fn(
+    "EncryptFile",
+    async (event, filePath, encryptType, key = null, iv = null) => {
+      const pathInfo = path.parse(filePath);
+      const encryptFilePath = path.join(pathInfo.dir, pathInfo.name + ".enc" + pathInfo.ext);
+
+      if (!key) {
+        key = cached.AESKey;
+      }
+
+      if (!iv) {
+        iv = key.substring(0, configData.encryptConfig.AES.iv_length);
+      }
+      await AES.encryptFile(filePath, encryptFilePath, key, iv);
+      return encryptFilePath;
+    }
+  );
+
+  ipcHandle.fn(
+    "DecryptFile",
+    async (event, filePath, decryptType, key = null, iv = null) => {
+      const pathInfo = path.parse(filePath);
+      const decryptFilePath = path.join(pathInfo.dir, pathInfo.base.replace(".enc", ""));
+
+      if (!key) {
+        key = cached.AESKey;
+      }
+
+      if (!iv) {
+        iv = key.substring(0, configData.encryptConfig.AES.iv_length);
+      }
+      await AES.decryptFile(filePath, decryptFilePath, key, iv);
+      return decryptFilePath;
+    }
+  );
+
 }
 
 // 创建窗口时触发

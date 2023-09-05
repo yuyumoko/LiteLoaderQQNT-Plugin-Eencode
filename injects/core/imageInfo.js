@@ -222,7 +222,7 @@ function checkSig(buffer, offset, sig) {
   return true;
 }
 
-module.exports = function imageInfo(buffer, path) {
+function imageInfo(buffer, path) {
   var pngSig = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
   var jpgSig = [0xff, 0xd8, 0xff];
   var gifSig = [0x47, 0x49, 0x46, 0x38, [0x37, 0x39], 0x61];
@@ -235,3 +235,8 @@ module.exports = function imageInfo(buffer, path) {
 
   return false;
 };
+
+module.exports = {
+  imageInfo,
+  checkSig
+}
