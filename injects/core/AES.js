@@ -19,7 +19,7 @@ function decrypt(text, key) {
   if (text.includes(":")) {
     let textParts = text.split(":");
     iv = Buffer.from(textParts.shift(), "hex");
-    text = textParts.join(":");
+    text = textParts[0];
   } else {
     iv = key.substring(0, 16);
   }
