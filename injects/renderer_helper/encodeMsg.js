@@ -2,26 +2,28 @@
   async function uploadImage(imgUrls, isFile) {
     const uploadUrl = "https://img.chkaja.com/ajaximg.php";
 
-    return eencode.uploadChkajaImage(uploadUrl, imgUrls, isFile).then((data) => {
-      if (data === "") {
-        Swal.fire({
-          icon: "error",
-          title: "上传失败",
-          text: "图片上传失败, 请检查网络",
-        });
-        return;
-      }
+    return eencode
+      .uploadChkajaImage(uploadUrl, imgUrls, isFile)
+      .then((data) => {
+        if (data === "") {
+          Swal.fire({
+            icon: "error",
+            title: "上传失败",
+            text: "图片上传失败, 请检查网络",
+          });
+          return;
+        }
 
-      const imgUrls = Array.from(
-        new Set(
-          data.match(
-            /https:\/\/img.chkaja.com\/([0-9a-f])+\.[jpg][pni][e]?[gf]/gm
+        const imgUrls = Array.from(
+          new Set(
+            data.match(
+              /https:\/\/img.chkaja.com\/([0-9a-f])+\.[jpg][pni][e]?[gf]/gm
+            )
           )
-        )
-      );
-      console.log(`imgUrls: ${imgUrls}`);
-      return imgUrls;
-    });
+        );
+        console.log(`imgUrls: ${imgUrls}`);
+        return imgUrls;
+      });
   }
 
   function setSendButton(isSend, processNum) {
@@ -35,8 +37,7 @@
     }
   }
 
-  async function encodeMessage(element, key, processNum=null) {
-
+  async function encodeMessage(element, key, processNum = null) {
     let formatMsg = [];
     const addFormatMsg = (type, value) => formatMsg.push({ type, value });
     const getFormatMsg = (separator = "\n") =>
@@ -51,7 +52,7 @@
 
     for (let line of element.childNodes) {
       for (let msg of line.childNodes) {
-        if (processNum) processNum(count += 1)
+        if (processNum) processNum((count += 1));
         switch (msg.nodeName) {
           case "MSG-IMG":
             try {
@@ -81,15 +82,28 @@
               .call(msgText, (c) => c.charCodeAt() !== 8288)
               .join("");
             if (msgText === "") break;
-            addFormatMsg("text", (msgText));
+            addFormatMsg("text", msgText);
 
             hasText = true;
             break;
           case "MSG-FILE":
             try {
-              const filePath = msg.lastElementChild.dataset.url.split('\\').join('/')
-              const uploadResult = await uploadImage([filePath], true);
-              addFormatMsg("file", uploadResult[0]);
+              const filePath = msg.lastElementChild.dataset.url
+                .split("\\")
+                .join("/");
+              const isVideo = filePath.toLocaleLowerCase().endsWith(".mp4");
+              if (isVideo) {
+                let uploadResult = (await uploadImage([filePath], true))[0];
+                uploadResult += "-mp4";
+                addFormatMsg("file", uploadResult);
+              } else {
+                Swal.fire({
+                  icon: "error",
+                  title: "上传失败",
+                  text: "暂不支持其他格式的文件加密",
+                });
+                return;
+              }
 
               hasFile = true;
               break;
@@ -107,7 +121,7 @@
             }
         }
       }
-      addFormatMsg("text", ("\n"));
+      addFormatMsg("text", "\n");
     }
     formatMsg.pop();
 
@@ -127,7 +141,7 @@
         rawMsg += `${msg.type}:${msg.value}\n`;
       }
     }
-    console.log("rawMsg: " + rawMsg)
+    console.log("rawMsg: " + rawMsg);
 
     const encodeData = await eencode.AES_encrypt(rawMsg, key);
 
@@ -138,7 +152,9 @@
     if (element.innerText.trim() === "") return;
 
     try {
-      const encodeData = await encodeMessage(element, key, (count) => setSendButton(true, count));
+      const encodeData = await encodeMessage(element, key, (count) =>
+        setSendButton(true, count)
+      );
       if (!encodeData) return;
 
       const elements = [

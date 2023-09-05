@@ -134,7 +134,14 @@
             rawText += handleDecodeImageMessage(value);
             break;
           case "file":
-            let filename = value.split("/").pop().replace(".png", ".mp4");
+            let filename = value.split("/").pop();
+            if (!filename.endsWith("-mp4")) {
+              return;
+            } else {
+              filename = filename.replace("-mp4", "");
+            }
+
+            filename = filename.replace(".png", ".mp4");
             let localPath = cachePath + "\\download\\" + filename;
             let isExist = await eencode.existsSync(localPath);
             if (!isExist) {
