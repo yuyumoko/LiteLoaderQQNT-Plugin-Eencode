@@ -93,7 +93,16 @@
                 .join("/");
               const isVideo = filePath.toLocaleLowerCase().endsWith(".mp4");
               if (isVideo) {
+                console.log(filePath)
                 let uploadResult = (await uploadImage([filePath], true))[0];
+                if (!uploadResult) {
+                  Swal.fire({
+                    icon: "error",
+                    title: "上传失败",
+                    text: "可能超出文件大小",
+                  });
+                  return;
+                }
                 uploadResult += "-mp4";
                 addFormatMsg("file", uploadResult);
               } else {
