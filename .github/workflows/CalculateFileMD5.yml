@@ -1,0 +1,16 @@
+name: Calculate File MD5
+
+on: [push]
+
+jobs: 
+  Calculate:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Cache MD5
+      - uses: techservicesillinois/cache-validation@v1.1.4
+        with:
+          path: ./
+          cache_hit: true
