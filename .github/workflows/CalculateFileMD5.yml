@@ -12,5 +12,5 @@ jobs:
       - name: Cache MD5
         uses: techservicesillinois/cache-validation@v1.1.4
         with:
-          path: ./
+          path: .
           cache_hit: true
