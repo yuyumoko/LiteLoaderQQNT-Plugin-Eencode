@@ -164,7 +164,10 @@
       const encodeData = await encodeMessage(element, key, (count) =>
         setSendButton(true, count)
       );
-      if (!encodeData) return;
+      if (!encodeData) {
+        setSendButton(false);
+        return;
+      }
 
       const elements = [
         {
