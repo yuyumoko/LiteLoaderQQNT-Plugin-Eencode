@@ -1,6 +1,9 @@
 name: CalculateFileMD5
 on: [push]
 
+permissions:
+  contents: write
+
 jobs:
   update:
     runs-on: ubuntu-latest
