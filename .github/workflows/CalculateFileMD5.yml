@@ -1,0 +1,29 @@
+name: CalculateFileMD5
+on: [push]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检查分支
+        uses: actions/checkout@v3
+
+      - name: 安装 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: 生成json文件
+        run: python __create_md5.py
+
+      - name: 暂存提交
+        run: |
+          git config --global user.name 'erinilis'
+          git config --global user.email '389897773@qq.com'
+          git add .
+          git commit -m "update" -a
+
+      - name: 推送
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
