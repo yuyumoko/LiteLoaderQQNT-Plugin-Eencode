@@ -1,4 +1,4 @@
-name: CalculateFileMD5
+name: CalculateFileHash
 on: [push]
 
 permissions:
@@ -17,14 +17,14 @@ jobs:
           python-version: '3.x'
 
       - name: 生成json文件
-        run: python __create_md5.py
+        run: python __create_hash.py
 
       - name: 暂存提交
         run: |
           git config --global user.name 'yuyumoko'
           git config --global user.email '389897773@qq.com'
           git add .
-          git commit -m "update" -a
+          git commit -m "auto calc hash" -a
 
       - name: 推送
         uses: ad-m/github-push-action@master
