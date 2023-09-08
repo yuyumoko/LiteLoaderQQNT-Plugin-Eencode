@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 def sha1(context):
-    return hashlib.sha1(context).hexdigest()
+    return hashlib.md5(context).hexdigest()
 
 
 def get_dir_hash(path, excludeDir=None):
