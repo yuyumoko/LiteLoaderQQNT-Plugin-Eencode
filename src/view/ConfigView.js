@@ -191,6 +191,7 @@
     checkUpdateBtn.setAttribute("aria-disabled", "true");
     try {
       const updateDiff = await eencode.checkUpdate();
+      console.log(updateDiff);
       const updateLength = Object.keys(updateDiff).length;
       const isFind = updateLength !== 0;
       setFindVersion(isFind, updateLength);
