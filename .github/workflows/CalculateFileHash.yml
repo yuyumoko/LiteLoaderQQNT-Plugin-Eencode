@@ -11,13 +11,13 @@ jobs:
       - name: 检查分支
         uses: actions/checkout@v3
 
-      - name: 安装 Python
-        uses: actions/setup-python@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          python-version: '3.11.5'
+          node-version: 18
 
       - name: 生成json文件
-        run: python __create_hash.py
+        run: node __create_hash.js
 
       - name: 暂存提交
         run: |
