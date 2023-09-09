@@ -3,7 +3,7 @@
 	"type": "extension",
 	"name": "歪比巴卜",
 	"slug": "eencode",
-	"description": "添加一个发送加密信息的按钮, 并自动解密已发送的信息",
+	"description": "文字图片消息加密~",
 	"version": "1.0.0",
 	"thumbnail": "./src/icons/icon.png",
 	"author": {

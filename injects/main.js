@@ -1,16 +1,17 @@
-const { ipcMain, shell, dialog, BrowserWindow } = require("electron");
+const { ipcMain, shell, dialog, app } = require("electron");
 
 const fs = require("fs");
 const path = require("path");
 const request = require("request");
-
-const manifest = require("../manifest.json");
 
 const IpcHandle = require("./utils/ipcHandle");
 const { imageInfo, checkSig } = require("./core/imageInfo");
 const Config = require("./core/config");
 
 const AES = require("./core/AES");
+
+const { Updater } = require("./core/updater");
+
 
 const PNG_HEARD = Buffer.from([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49,
@@ -28,16 +29,19 @@ let currentRequest;
 async function onLoad(plugin) {
   const cachePath = plugin.path.cache;
   
-  const config = new Config(plugin.path.data);
+  const _config = new Config(plugin.path.data);
+  const config = _config.load();
 
-  const ipcHandle = new IpcHandle(manifest.slug);
+  const ipcHandle = new IpcHandle(config.manifest.slug);
 
-  const configData = config.load();
-  cached.autoDecrypt = configData.autoDecrypt;
-  cached.AESKey = configData.encryptConfig.AES.key;
+  const updater = new Updater(plugin.path.plugin)
+  
+  
+  cached.autoDecrypt = config.autoDecrypt;
+  cached.AESKey = config.encryptConfig.AES.key;
 
 
-  if (configData.autoDeleteCache && fs.existsSync(cachePath)) {
+  if (config.autoDeleteCache && fs.existsSync(cachePath)) {
     try {
       fs.rmSync(cachePath, { recursive: true });
     } catch (error) {
@@ -55,7 +59,15 @@ async function onLoad(plugin) {
     fs.mkdirSync(cachePath, { recursive: true });
   }
 
+  ipcHandle.fn("restart", (event) => {
+    app.relaunch();
+    app.exit(0);
+  });
+
   ipcHandle.fn("OpenWeb", (event, url) => shell.openExternal(url));
+
+  ipcHandle.fn("checkUpdate", async (event) => await updater.check()); 
+  ipcHandle.fn("installUpdate", async (event) => await updater.install());
 
   ipcHandle.fn("uploadChkajaImage", (event, host, imgUrls, isFile = null) => {
     try {
@@ -158,9 +170,9 @@ async function onLoad(plugin) {
   ipcHandle.fn("readFileSync", (event, filePath) => fs.readFileSync(filePath));
   ipcHandle.fn("existsSync", (event, filePath) => fs.existsSync(filePath));
 
-  ipcHandle.fn("GetConfig", (event) => config.load());
+  ipcHandle.fn("GetConfig", (event) => _config.load());
   ipcHandle.fn("GetDefaultConfig", (event) => Config.default);
-  ipcHandle.fn("SetConfig", (event, name, data) => config.set(name, data));
+  ipcHandle.fn("SetConfig", (event, name, data) => _config.set(name, data));
 
   ipcHandle.fn("GetCache", (event) => cached);
   ipcHandle.fn("SetCache", (event, name, data) => {
@@ -169,11 +181,11 @@ async function onLoad(plugin) {
 
   ipcHandle.fn("SetAESKey", (event, AESKey) => {
     cached.AESKey = AESKey;
-    config.set("encryptConfig.AES.key", AESKey);
+    _config.set("encryptConfig.AES.key", AESKey);
   });
 
   ipcHandle.fn("AES_encrypt", (event, text, key) =>
-    AES.encrypt(text, key, configData.encryptConfig.AES.iv_length)
+    AES.encrypt(text, key, config.encryptConfig.AES.iv_length)
   );
   ipcHandle.fn("AES_decrypt", (event, text, key) => AES.decrypt(text, key));
 
@@ -188,7 +200,7 @@ async function onLoad(plugin) {
       }
 
       if (!iv) {
-        iv = key.substring(0, configData.encryptConfig.AES.iv_length);
+        iv = key.substring(0, config.encryptConfig.AES.iv_length);
       }
       await AES.encryptFile(filePath, encryptFilePath, key, iv);
       return encryptFilePath;
@@ -206,7 +218,7 @@ async function onLoad(plugin) {
       }
 
       if (!iv) {
-        iv = key.substring(0, configData.encryptConfig.AES.iv_length);
+        iv = key.substring(0, config.encryptConfig.AES.iv_length);
       }
       await AES.decryptFile(filePath, decryptFilePath, key, iv);
       return decryptFilePath;

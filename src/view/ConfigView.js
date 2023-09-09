@@ -144,11 +144,70 @@
 
   initSwitch("#autoDeleteCache", config.autoDeleteCache, "autoDeleteCache");
 
-  view
-    .querySelector("#msg-encode-github-url")
-    .addEventListener("click", async () => {
-      await eencode.OpenWeb(
-        "https://github.com/GangPeter/LiteLoaderQQNT-Plugin-Msg-encode"
-      );
-    });
+  
+  const currentVersion = view.querySelector("#eencode-current-version")
+  currentVersion.innerHTML = `${config.manifest.version}`
+
+  const checkUpdateBtn = view.querySelector("#eencode-checkUpdate")
+  const hasFindVersionText = view.querySelector(".has-find")
+  const updateLengthText = view.querySelector(".update-length")
+  const checkDateText = view.querySelector(".update-check-date")
+
+  const installUpdateBtn = view.querySelector(".eencode-install-update")
+
+
+  view.querySelector(".eencode-restart").addEventListener("click", async () => {
+    await eencode.restart();
+  });
+
+
+  installUpdateBtn.addEventListener("click", async () => {
+    try {
+      installUpdateBtn.innerHTML = `正在获取..`;
+      installUpdateBtn.setAttribute("aria-disabled", "true");
+      await eencode.installUpdate();
+      installUpdateBtn.classList.add("hidden");
+      view.querySelector(".restart-wrap").classList.remove("hidden");
+    } catch (error) {
+      showMsg(error.message);
+    }
+  });
+
+
+  function setFindVersion(find, updateLength) {
+    if (find) {
+      hasFindVersionText.innerHTML = `<h2 style="color: coral;">发现新的版本, 请更新!</h2>`;
+      updateLengthText.innerHTML = `有${updateLength}个文件需要更新`;
+      installUpdateBtn.classList.remove("hidden")
+    } else {
+      hasFindVersionText.innerHTML = `<h2>已经是最新版本, 无需更新</h2>`;
+      installUpdateBtn.classList.add("hidden")
+    }
+    checkDateText.innerHTML = `检查时间: ${new Date().toLocaleString()}`;
+  }
+
+  async function checkUpdate() {
+    checkUpdateBtn.innerHTML = "正在检查更新..";
+    checkUpdateBtn.setAttribute("aria-disabled", "true");
+    try {
+      const updateDiff = await eencode.checkUpdate();
+      const updateLength = Object.keys(updateDiff).length;
+      const isFind = updateLength !== 0;
+      setFindVersion(isFind, updateLength);
+
+      checkUpdateBtn.innerHTML = "重新检查更新";
+      checkUpdateBtn.setAttribute("aria-disabled", "false");
+    } catch (error) {
+      checkUpdateBtn.innerHTML = "获取失败, 请重新获取";
+      checkUpdateBtn.setAttribute("aria-disabled", "false");
+    }
+  }
+  
+
+
+  checkUpdateBtn.addEventListener("click", async () => {
+    await checkUpdate();
+  });
+
+  await checkUpdate();
 })();

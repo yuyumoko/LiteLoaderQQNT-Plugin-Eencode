@@ -58,14 +58,6 @@
                                 </svg>
                             </span>
                         </li>
-                        <!-- <li class="q-pulldown-menu-list-item" data-value="groupId-SenderId">
-                            <span class="content">发送者加密</span>
-                            <span class="icon">
-                                <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M2 7L6.00001 11L14 3" stroke="currentColor" stroke-linejoin="round"></path>
-                                </svg>
-                            </span>
-                        </li> -->
                     </ul>
                 </div>
             </div>
@@ -93,17 +85,30 @@
     </div>
 </div>
 
-<!-- <h1 class="label">鸣谢</h1>
-<div class="wrap">
+
+<h1 class="label">当前版本版本 <span id="eencode-current-version"></span></h1>
+<div class="wrap" id="eencode-version">
     <div class="vertical-list-item">
-        <p>本项目借鉴与 Msg-encode</p>
+        <div class="has-find">
+            <h2>正在查看是否有新版...</h2>
+        </div>
+        <div class="ops-btns">
+            <button class="q-button q-button--secondary q-button--small" id="eencode-checkUpdate">重新检查更新</button>
+        </div>
     </div>
-    <hr class="horizontal-dividing-line">
     <div class="vertical-list-item">
         <div>
-            <h2>Github - Plugin-Msg-encode</h2>
+            <p class="update-length">等待获取...</p>
+            <p class="update-check-date"></p>
         </div>
-        <button class="q-button q-button--secondary q-button--small" id="msg-encode-github-url">前往</button>
+        <div class="ops-btns">
+            <button class="q-button q-button--secondary q-button--small eencode-install-update hidden">立即更新</button>
+        </div>
     </div>
-</div> -->
-
+    <div class="vertical-list-item restart-wrap hidden">
+        <h2>更新完成, 重新启动QQ生效</h2>
+        <div class="ops-btns">
+            <button class="q-button q-button--secondary q-button--small eencode-restart">重新启动</button>
+        </div>
+    </div>
+</div>

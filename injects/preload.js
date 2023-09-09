@@ -8,7 +8,12 @@ const get_fn_key = (func_name) => `${event_prefix}.${slug}.${func_name}`;
 
 // 在window对象下导出只读对象
 contextBridge.exposeInMainWorld(slug, {
+  restart: () => ipcRenderer.invoke(get_fn_key("restart")),
+
   OpenWeb: (url) => ipcRenderer.invoke(get_fn_key("OpenWeb"), url),
+
+  checkUpdate: () => ipcRenderer.invoke(get_fn_key("checkUpdate")),
+  installUpdate: () => ipcRenderer.invoke(get_fn_key("installUpdate")),
 
   uploadChkajaImage: (host, imgUrls, isFile) =>
     ipcRenderer.invoke(get_fn_key("uploadChkajaImage"), host, imgUrls, isFile),
