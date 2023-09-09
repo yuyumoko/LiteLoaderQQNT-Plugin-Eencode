@@ -45,6 +45,7 @@ class Updater {
     this.dirPath = path.normalize(dirPath);
   }
 
+  // 本地与git上计算的不一致 暂时弃用
   async generateFilesHash() {
     const self = this;
     let hashObj = {};
@@ -76,7 +77,8 @@ class Updater {
   async check() {
     return githubHashData().then(async (githubHashData) => {
       if (!this.localHashData) {
-        this.localHashData = await this.generateFilesHash();
+        // this.localHashData = await this.generateFilesHash();
+        this.localHashData = this.getLocalHashData();
       }
       const diff = getObjectDiff(githubHashData, this.localHashData);
       this.updateUrlPath = object2urls(diff);
