@@ -63,8 +63,23 @@ async function initSendButton() {
 
 }
 
-// 页面加载完成时触发
+// 页面加载完成时触发   
 async function onLoad() {
+  // 转发界面解密
+  const interval3 = setInterval(async () => {
+    if (window.location.hash.startsWith("#/forward/")) {
+      const msgContainer = document.querySelectorAll(
+        ".scroll-view--show-scrollbar .message-content__wrapper"
+      );
+      if (msgContainer.length > 0) {
+        clearInterval(interval3);
+        for (let node of msgContainer) {
+          decodeMsgAPI.messageHandler(node);
+        }
+      }
+    } 
+  }, 100);
+
   config = await eencode.GetConfig();
   initSendButtonFlag = !!document.querySelector(".eencode-send-button");
 
