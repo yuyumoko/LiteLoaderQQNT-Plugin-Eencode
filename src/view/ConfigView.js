@@ -144,6 +144,12 @@
 
   initSwitch("#autoDeleteCache", config.autoDeleteCache, "autoDeleteCache");
 
+  view.querySelector(".cache-path").value = cachePath;
+  view.querySelector(".cache-size").innerHTML =
+    "已缓存: " + (await eencode.GetCacheSize());
+  view.querySelector(".open-cache").addEventListener("click", async () => {
+    await eencode.OpenCacheDir();
+  });
   
   const currentVersion = view.querySelector("#eencode-current-version")
   currentVersion.innerHTML = `${config.manifest.version}`

@@ -12,6 +12,8 @@ const AES = require("./core/AES");
 
 const { Updater } = require("./core/updater");
 
+const { calcDirSizeStr } = require("./utils/tools");
+
 
 const PNG_HEARD = Buffer.from([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49,
@@ -65,6 +67,8 @@ async function onLoad(plugin) {
   });
 
   ipcHandle.fn("OpenWeb", (event, url) => shell.openExternal(url));
+  ipcHandle.fn("OpenCacheDir", (event) => shell.openPath(cachePath));
+  ipcHandle.fn("GetCacheSize", (event) => calcDirSizeStr(cachePath));
 
   ipcHandle.fn("checkUpdate", async (event) => await updater.check()); 
   ipcHandle.fn("installUpdate", async (event) => await updater.install());

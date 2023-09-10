@@ -76,6 +76,7 @@ class Updater {
 
   async check() {
     return githubHashData().then(async (githubHashData) => {
+      this.githubHashData = githubHashData; // 刷新, 保证安装时候是最新的
       if (!this.localHashData) {
         // this.localHashData = await this.generateFilesHash();
         this.localHashData = this.getLocalHashData();
@@ -106,6 +107,10 @@ class Updater {
       const updatePath = path.join(this.dirPath, urlPath);
       fs.writeFileSync(updatePath, updateRes.body);
     }
+    fs.writeFileSync(
+      path.join(this.dirPath, "hash.json"),
+      JSON.stringify(this.githubHashData)
+    );
     return true;
   }
 }

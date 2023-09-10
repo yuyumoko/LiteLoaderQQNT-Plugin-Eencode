@@ -10,7 +10,9 @@ const get_fn_key = (func_name) => `${event_prefix}.${slug}.${func_name}`;
 contextBridge.exposeInMainWorld(slug, {
   restart: () => ipcRenderer.invoke(get_fn_key("restart")),
 
-  OpenWeb: (url) => ipcRenderer.invoke(get_fn_key("OpenWeb"), url),
+  OpenWeb: (url) => ipcRenderer.invoke(get_fn_key("OpenWeb"), url), 
+  OpenCacheDir: () => ipcRenderer.invoke(get_fn_key("OpenCacheDir")),
+  GetCacheSize: () => ipcRenderer.invoke(get_fn_key("GetCacheSize")),
 
   checkUpdate: () => ipcRenderer.invoke(get_fn_key("checkUpdate")),
   installUpdate: () => ipcRenderer.invoke(get_fn_key("installUpdate")),
