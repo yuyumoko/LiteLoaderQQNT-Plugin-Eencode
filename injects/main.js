@@ -23,6 +23,7 @@ const PNG_HEARD = Buffer.from([
 let cached = {
   autoDecrypt: true,
   AESKey: "",
+  groupEncryptMode: "",
 };
 
 let currentRequest;
@@ -41,6 +42,7 @@ async function onLoad(plugin) {
   
   cached.autoDecrypt = config.autoDecrypt;
   cached.AESKey = config.encryptConfig.AES.key;
+  cached.groupEncryptMode = config.groupEncryptMode;
 
 
   if (config.autoDeleteCache && fs.existsSync(cachePath)) {
@@ -164,10 +166,7 @@ async function onLoad(plugin) {
       return;
     }
     fs.unlinkSync(filePath);
-    rawData = rawData.subarray(
-      PNG_HEARD.length,
-      rawData.length - PNG_HEARD.length
-    );
+    rawData = rawData.subarray(PNG_HEARD.length);
     fs.writeFileSync(filePath, rawData);
   });
 
@@ -176,7 +175,12 @@ async function onLoad(plugin) {
 
   ipcHandle.fn("GetConfig", (event) => _config.load());
   ipcHandle.fn("GetDefaultConfig", (event) => Config.default);
-  ipcHandle.fn("SetConfig", (event, name, data) => _config.set(name, data));
+  ipcHandle.fn("SetConfig", (event, name, data, setCache = false) => {
+    _config.set(name, data);
+    if (setCache) {
+      cached[name] = data;
+    }
+  });
 
   ipcHandle.fn("GetCache", (event) => cached);
   ipcHandle.fn("SetCache", (event, name, data) => {

@@ -10,7 +10,7 @@ const get_fn_key = (func_name) => `${event_prefix}.${slug}.${func_name}`;
 contextBridge.exposeInMainWorld(slug, {
   restart: () => ipcRenderer.invoke(get_fn_key("restart")),
 
-  OpenWeb: (url) => ipcRenderer.invoke(get_fn_key("OpenWeb"), url), 
+  OpenWeb: (url) => ipcRenderer.invoke(get_fn_key("OpenWeb"), url),
   OpenCacheDir: () => ipcRenderer.invoke(get_fn_key("OpenCacheDir")),
   GetCacheSize: () => ipcRenderer.invoke(get_fn_key("GetCacheSize")),
 
@@ -36,8 +36,8 @@ contextBridge.exposeInMainWorld(slug, {
 
   GetConfig: () => ipcRenderer.invoke(get_fn_key("GetConfig")),
   GetDefaultConfig: () => ipcRenderer.invoke(get_fn_key("GetDefaultConfig")),
-  SetConfig: (name, data) =>
-    ipcRenderer.invoke(get_fn_key("SetConfig"), name, data),
+  SetConfig: (name, data, setCache) =>
+    ipcRenderer.invoke(get_fn_key("SetConfig"), name, data, setCache),
 
   GetCache: () => ipcRenderer.invoke(get_fn_key("GetCache")),
   SetCache: (name, data) =>

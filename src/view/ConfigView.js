@@ -74,7 +74,7 @@
 
       const item_value = target.dataset.value;
 
-      await eencode.SetConfig("groupEncryptMode", item_value);
+      await eencode.SetConfig("groupEncryptMode", item_value, true);
     }
   });
 
