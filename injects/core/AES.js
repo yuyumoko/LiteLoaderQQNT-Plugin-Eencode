@@ -5,23 +5,24 @@ const { promisify } = require('util');
 const crypto = require("crypto");
 const algorithm = "aes-256-ctr";
 
+
 function encrypt(text, key, iv_length) {
   // let iv = crypto.randomBytes(iv_length);
-  let iv = key.substring(0, 16);
+  let iv = key.substring(0, iv_length);
   let cipher = crypto.createCipheriv(algorithm, key, iv);
   let encrypted = cipher.update(text);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
   return encrypted.toString("hex");
 }
 
-function decrypt(text, key) {
+function decrypt(text, key, iv_length) {
   let iv;
   if (text.includes(":")) {
     let textParts = text.split(":");
     iv = Buffer.from(textParts.shift(), "hex");
     text = textParts[0];
   } else {
-    iv = key.substring(0, 16);
+    iv = key.substring(0, iv_length);
   }
   let encryptedText = Buffer.from(text, "hex");
   let decipher = crypto.createDecipheriv(algorithm, key, iv);
@@ -44,10 +45,18 @@ function decryptFile(encryptFile, output, key, iv) {
   return promisify(pipeline)(readStream, transformStream, writeStream);
 }
 
+function generateKeyByStr(strKey) {
+  const hash = crypto.createHash("md5");
+  hash.update(strKey);
+  return hash.digest("hex");
+}
+
+
 
 module.exports = {
   encrypt,
   decrypt,
   encryptFile,
-  decryptFile
+  decryptFile,
+  generateKeyByStr
 };

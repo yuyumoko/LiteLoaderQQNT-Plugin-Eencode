@@ -49,6 +49,8 @@ contextBridge.exposeInMainWorld(slug, {
     ipcRenderer.invoke(get_fn_key("AES_encrypt"), text, key),
   AES_decrypt: (text, key) =>
     ipcRenderer.invoke(get_fn_key("AES_decrypt"), text, key),
+  AES_customKey: (chatType, uid) =>
+  ipcRenderer.invoke(get_fn_key("AES_customKey"), chatType, uid),
 
   EncryptFile: (filePath, encryptType, key, iv) =>
     ipcRenderer.invoke(

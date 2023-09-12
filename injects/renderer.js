@@ -47,11 +47,20 @@ async function initSendButton() {
   buttonEncode.addEventListener("click", async () => {
     const ck_editor = document.querySelector(".ck-editor__main");
     const p_editor = ck_editor.firstElementChild;
-
+    cancelButtonEncode.parentNode.parentNode.classList.remove("hidden");
+    
     const cached = await eencode.GetCache();
     const peer = await LLAPI.getPeer();
-    cancelButtonEncode.parentNode.parentNode.classList.remove("hidden");
-    await encodeMsgAPI.sendEncodeMessage(p_editor, cached.AESKey, peer);
+    let AESKey;
+
+    if (cached.groupEncryptMode === "groupId") {
+      
+      AESKey = await eencode.AES_customKey(peer.chatType, peer.uid); 
+    } else {
+      AESKey = cached.AESKey
+    }
+    
+    await encodeMsgAPI.sendEncodeMessage(p_editor, AESKey, peer);
     cancelButtonEncode.parentNode.parentNode.classList.add("hidden");
   });
 

@@ -194,7 +194,17 @@
       targetElement.innerHTML += `<hr class="horizontal-dividing-line">`;
       targetElement.innerHTML += `<p>正在解密...</p>`;
 
-      const result = await decryptAES(text, cached.AESKey);
+      let result = await decryptAES(text, cached.AESKey);
+      if (!result) { 
+        const peer = await LLAPI.getPeer();
+        if (peer.chatType === "group") { 
+          // 尝试使用群ID解密
+          const AESKey = await eencode.AES_customKey(peer.chatType, peer.uid); 
+          result = await decryptAES(text, AESKey);
+        }
+      }
+
+
       if (!result) {
         targetElement.innerHTML = innerHTML;
         targetElement.innerHTML += `<hr class="horizontal-dividing-line">`;

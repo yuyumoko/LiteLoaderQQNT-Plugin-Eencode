@@ -195,7 +195,22 @@ async function onLoad(plugin) {
   ipcHandle.fn("AES_encrypt", (event, text, key) =>
     AES.encrypt(text, key, config.encryptConfig.AES.iv_length)
   );
-  ipcHandle.fn("AES_decrypt", (event, text, key) => AES.decrypt(text, key));
+  ipcHandle.fn("AES_decrypt", (event, text, key) =>
+    AES.decrypt(text, key, config.encryptConfig.AES.iv_length)
+  );
+  ipcHandle.fn("AES_generateKeyByStr", (event, text) =>
+    AES.generateKeyByStr(text)
+  );
+  ipcHandle.fn("AES_customKey", (event, chatType, uid) => {
+    let defaultKey = cached.AESKey;
+    if (chatType !== "group") {
+      return defaultKey
+    }
+
+    return AES.generateKeyByStr(`${uid}`, config.encryptConfig.AES.iv_length);
+  });
+
+
 
   ipcHandle.fn(
     "EncryptFile",
