@@ -98,7 +98,7 @@ async function onLoad(plugin) {
           url = url.toLowerCase();
           let filename = path.basename(url);
           if (filename.endsWith(".null")) {
-            const format = imageInfo(fs.readFile(url)).format;
+            const format = imageInfo(fs.readFileSync(url)).format;
             filename = filename.replace(".null", "." + format);
           }
 
