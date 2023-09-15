@@ -1,4 +1,60 @@
 () => {
+  const encodeProcessHtml = `
+<div class="av-call-status horseman vue-component" data-v-be688bd6="" data-v-40da1fb0="">
+  <div class="av-call-info" data-v-be688bd6="">
+    <div class="content-text" data-v-be688bd6="" style="padding-right: 10px;">加密进度</div>
+    <div class="g-container">
+      <span class="g-text"></span>
+      <div class="g-progress"></div>
+    </div>
+  </div>
+  <div class="av-call-btns BUTTONS_ORDER" data-v-be688bd6="">
+    <button class="q-button q-button--secondary q-button--small vue-component cancel-send" aria-disabled="false" aria-busy="false"
+      data-v-be688bd6="">
+      <span class="q-button__slot-warp ">取消加密</span>
+    </button>
+  </div>
+</div>`;
+
+  function initProcess() {
+    const chatTop = document.querySelector(".chat-msg-area__tip--top");
+    if (chatTop) {
+      let processBar = chatTop.querySelector(".eencode-process");
+      if (!processBar) {
+        processBar = document.createElement("div");
+        processBar.classList.add("vue-component", "eencode-process");
+        processBar.innerHTML = encodeProcessHtml;
+        processBar
+          .querySelector(".cancel-send")
+          .addEventListener("click", async () => {
+            await eencode.AbortCurrentRequest();
+            setSendButton(false);
+            processBar.remove();
+          });
+        chatTop.appendChild(processBar);
+      }
+      return processBar;
+    }
+  }
+
+  function setProcess(current, total) {
+    const processBar = initProcess();
+    if (processBar) {
+      processBar.querySelector(".g-text").innerText = `${current}/${total}`;
+      processBar.querySelector(".g-progress").style.width = `${
+        (current / total) * 100
+      }%`;
+    }
+  }
+
+  function removeProcess() {
+    const processBar = initProcess();
+    if (processBar) {
+      processBar.remove();
+    }
+  }
+
+
   async function uploadImage(imgUrls, isFile) {
     const uploadUrl = "https://img.chkaja.com/ajaximg.php";
 
@@ -26,18 +82,20 @@
       });
   }
 
-  function setSendButton(isSend, processNum) {
+  function setSendButton(isSend, current, total) {
     const buttonEncode = document.querySelector(".eencode-send-button");
     if (isSend) {
       buttonEncode.classList.add("send--disabled");
-      buttonEncode.innerText = `正在加密[${processNum}]`;
+      buttonEncode.innerText = `正在加密`;
+      setProcess(current, total);
     } else {
       buttonEncode.classList.remove("send--disabled");
       buttonEncode.innerText = "加密发送";
+      removeProcess();
     }
   }
 
-  async function encodeMessage(element, key, processNum = null) {
+  async function encodeMessage(element, key, process) {
     let formatMsg = [];
     const addFormatMsg = (type, value) => formatMsg.push({ type, value });
     const getFormatMsg = (separator = "\n") =>
@@ -51,8 +109,9 @@
     let count = 0;
 
     for (let line of element.childNodes) {
+      const lineLen = line.childNodes.length - 1;
       for (let msg of line.childNodes) {
-        if (processNum) processNum((count += 1));
+        if (process) process((count += 1), lineLen);
         switch (msg.nodeName) {
           case "MSG-IMG":
             try {
@@ -161,8 +220,8 @@
     if (element.innerText.trim() === "") return;
 
     try {
-      const encodeData = await encodeMessage(element, key, (count) =>
-        setSendButton(true, count)
+      const encodeData = await encodeMessage(element, key, (current, total) =>
+        setSendButton(true, current, total)
       );
       if (!encodeData) {
         setSendButton(false);

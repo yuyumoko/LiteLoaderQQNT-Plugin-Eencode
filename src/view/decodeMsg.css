@@ -17,3 +17,24 @@
 .hidden {
     visibility: hidden;
 }
+
+.g-container {
+    width: 240px;
+    height: 25px;
+    border-radius: 25px;
+    background: #eee;
+}
+
+.g-text {
+    float: left;
+    margin-left: 45%;
+    margin-top: 4px;
+}
+
+.g-progress {
+    width: 0%;
+    height: inherit;
+    border-radius: 25px;
+    transition: width .2s linear;
+    background: linear-gradient(269deg, #00ff00, #0ff);
+}

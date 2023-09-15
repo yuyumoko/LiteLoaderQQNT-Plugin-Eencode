@@ -42,12 +42,10 @@ async function initSendButton() {
   operation.insertAdjacentHTML("afterbegin", buttonHtmlText);
 
   const buttonEncode = document.querySelector(".eencode-send-button");
-  const cancelButtonEncode = document.querySelector(".eencode-cancel-send");
 
   buttonEncode.addEventListener("click", async () => {
     const ck_editor = document.querySelector(".ck-editor__main");
     const p_editor = ck_editor.firstElementChild;
-    cancelButtonEncode.parentNode.parentNode.classList.remove("hidden");
     
     const cached = await eencode.GetCache();
     const peer = await LLAPI.getPeer();
@@ -61,13 +59,12 @@ async function initSendButton() {
     }
     
     await encodeMsgAPI.sendEncodeMessage(p_editor, AESKey, peer);
-    cancelButtonEncode.parentNode.parentNode.classList.add("hidden");
-  });
 
-  cancelButtonEncode.addEventListener("click", async () => {
-    await eencode.AbortCurrentRequest();
-    encodeMsgAPI.setSendButton(false);
-    cancelButtonEncode.parentNode.parentNode.classList.add("hidden");
+    // 有人反馈发送完按钮不见, 那就重新检查一下
+    initSendButtonFlag = !!document.querySelector(".eencode-send-button");
+    if (!initSendButtonFlag) 
+      await initSendButton();
+    
   });
 
 }
