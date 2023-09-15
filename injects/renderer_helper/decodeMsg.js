@@ -257,6 +257,7 @@
       fileInfoDiv.innerHTML += `<hr class="horizontal-dividing-line">`;
       fileInfoDiv.innerHTML += `<p data-v-91f9511c="">文件名: ${fileName}</p>`;
       fileInfoDiv.innerHTML += `<p data-v-91f9511c="">保存文件时, 自动解密</p>`;
+      fileInfoDiv.innerHTML += `<p data-v-91f9511c="">右键菜单也可以解密文件</p>`;
 
       
       const filePath = fileInfo.filePath;
