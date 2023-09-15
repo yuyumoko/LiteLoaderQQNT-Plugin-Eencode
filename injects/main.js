@@ -130,7 +130,7 @@ async function onLoad(plugin) {
 
   ipcHandle.fn("DownloadFile", async (event, url, filename) => {
     return new Promise((resolve, reject) => {
-      const fileDir = path.join(plugin.path.cache, "download");
+      const fileDir = path.join(cachePath, "download");
       let filePath = path.join(fileDir, filename);
 
       if (fs.existsSync(filePath)) {
@@ -170,7 +170,13 @@ async function onLoad(plugin) {
     fs.writeFileSync(filePath, rawData);
   });
 
+  ipcHandle.fn("getFileStatSync", (event, filePath) => {
+    const fileInfo = fs.statSync(filePath);
+    fileInfo.name = path.basename(filePath);
+    return fileInfo;
+  });
   ipcHandle.fn("readFileSync", (event, filePath) => fs.readFileSync(filePath));
+  ipcHandle.fn("deleteFileSync", (event, filePath) => fs.unlinkSync(filePath));
   ipcHandle.fn("existsSync", (event, filePath) => fs.existsSync(filePath));
 
   ipcHandle.fn("GetConfig", (event) => _config.load());
@@ -215,8 +221,10 @@ async function onLoad(plugin) {
   ipcHandle.fn(
     "EncryptFile",
     async (event, filePath, encryptType, key = null, iv = null) => {
-      const pathInfo = path.parse(filePath);
-      const encryptFilePath = path.join(pathInfo.dir, pathInfo.name + ".enc" + pathInfo.ext);
+      const fileDir = path.join(cachePath, "encrypt");
+      if (!fs.existsSync(fileDir)) {
+        fs.mkdirSync(fileDir, { recursive: true });
+      }
 
       if (!key) {
         key = cached.AESKey;
@@ -225,6 +233,11 @@ async function onLoad(plugin) {
       if (!iv) {
         iv = key.substring(0, config.encryptConfig.AES.iv_length);
       }
+
+      const pathInfo = path.parse(filePath);
+      const encryptName = `pge-${AES.encrypt(pathInfo.name, key, iv.length)}`
+      const encryptFilePath = path.join(fileDir, encryptName + pathInfo.ext);
+      
       await AES.encryptFile(filePath, encryptFilePath, key, iv);
       return encryptFilePath;
     }
@@ -233,8 +246,6 @@ async function onLoad(plugin) {
   ipcHandle.fn(
     "DecryptFile",
     async (event, filePath, decryptType, key = null, iv = null) => {
-      const pathInfo = path.parse(filePath);
-      const decryptFilePath = path.join(pathInfo.dir, pathInfo.base.replace(".enc", ""));
 
       if (!key) {
         key = cached.AESKey;
@@ -243,6 +254,16 @@ async function onLoad(plugin) {
       if (!iv) {
         iv = key.substring(0, config.encryptConfig.AES.iv_length);
       }
+
+      const pathInfo = path.parse(filePath);
+
+      let pathInfoName = pathInfo.name;
+      if (pathInfoName.startsWith("pge-")) {
+        pathInfoName = pathInfoName.slice(config.encryptConfig.AES.prefix.length);
+      }
+
+      const decryptName = AES.decrypt(pathInfoName, key, iv.length)
+      const decryptFilePath = path.join(pathInfo.dir, decryptName + pathInfo.ext);
       await AES.decryptFile(filePath, decryptFilePath, key, iv);
       return decryptFilePath;
     }
@@ -251,7 +272,37 @@ async function onLoad(plugin) {
 }
 
 // 创建窗口时触发
-function onBrowserWindowCreated(window, plugin) {}
+function onBrowserWindowCreated(window, plugin) {
+  const original_send =
+    (window.webContents.__qqntim_original_object &&
+      window.webContents.__qqntim_original_object.send) ||
+    window.webContents.send;
+  const patched_send = (channel, ...args) => {
+    // if (args?.[1]?.[0]?.cmdName) {
+    //   console.log(args?.[1]?.[0]?.cmdName);
+    // }
+    //  if (args?.[1]?.[0]?.cmdName == "nodeIKernelMsgListener/onRichMediaDownloadComplete")
+    //     console.log(printObject(args))
+    // if (args?.[1]?.[0]?.cmdName == "nodeIKernelMsgListener/onAddSendMsg")
+    // console.log(args?.[1]?.[0]?.cmdName)
+    //     console.log(printObject(args))
+
+    if (
+      args?.[1]?.[0]?.cmdName ===
+      "nodeIKernelMsgListener/onRichMediaProgerssUpdate"
+    ) {
+      window.webContents.send("media-progerss-update", args);
+    }
+    
+    return original_send.call(window.webContents, channel, ...args);
+  };
+
+  if (window.webContents.__qqntim_original_object) {
+    window.webContents.__qqntim_original_object.send = patched_send;
+  } else {
+    window.webContents.send = patched_send;
+  }
+}
 
 // 这两个函数都是可选的
 module.exports = {

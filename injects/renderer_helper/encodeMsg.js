@@ -95,7 +95,18 @@
     }
   }
 
-  async function encodeMessage(element, key, process) {
+  function findFileMsgElement(elementId) {
+    const fileElement = document.querySelectorAll(".file-element");
+    if (fileElement) {
+      for (const element of fileElement) {
+        if (element.getAttribute("element-id") === elementId) {
+          return element;
+        }
+      }
+    }
+  }
+
+  async function encodeMessage(element, key, process, peer) {
     let formatMsg = [];
     const addFormatMsg = (type, value) => formatMsg.push({ type, value });
     const getFormatMsg = (separator = "\n") =>
@@ -147,12 +158,12 @@
             break;
           case "MSG-FILE":
             try {
+              // 上传视频文件
               const filePath = msg.lastElementChild.dataset.url
                 .split("\\")
                 .join("/");
               const isVideo = filePath.toLocaleLowerCase().endsWith(".mp4");
               if (isVideo) {
-                console.log(filePath)
                 let uploadResult = (await uploadImage([filePath], true))[0];
                 if (!uploadResult) {
                   Swal.fire({
@@ -165,15 +176,45 @@
                 uploadResult += "-mp4";
                 addFormatMsg("file", uploadResult);
               } else {
-                Swal.fire({
-                  icon: "error",
-                  title: "上传失败",
-                  text: "暂不支持其他格式的文件加密",
-                });
-                return;
-              }
+                // 上传普通文件
+                const encodeFile = await eencode.EncryptFile(filePath);
+                const fileInfo = await destructFileElement(encodeFile);
 
-              hasFile = true;
+                console.log(`源文件: ${filePath}`);
+                console.log(`加密文件: ${encodeFile}`);
+
+                if (!peer) peer = await LLAPI.getPeer();
+                await LLAPI.sendMessage(peer, [
+                  {
+                    type: "raw",
+                    raw: fileInfo,
+                  },
+                ]);
+                const fileSize = fileInfo.fileElement.fileSize;
+
+                const autoDelFile = (uploadInfo) => {
+                  const timer = setInterval(async () => {
+                    const msgElement = findFileMsgElement(
+                      uploadInfo.msgElementId
+                    );
+                    if (msgElement) {
+                      const statText =
+                        msgElement.querySelector(".file-info").innerText;
+                      if (
+                        statText.includes("取消") ||
+                        statText.includes("已发送")
+                      ) {
+                        clearInterval(timer);
+                        await eencode.deleteFileSync(encodeFile);
+                        console.log("删除完成: " + encodeFile);
+                      }
+                    }
+                  }, 1000);
+                };
+                EnEvent.once("media-progerss-update-" + fileSize, autoDelFile);
+                hasFile = true;
+              }
+              
               break;
             } catch (error) {
               if (error.message.includes("reply was never sent")) {
@@ -211,6 +252,12 @@
     }
     console.log("rawMsg: " + rawMsg);
 
+    if (hasFile) {
+      console.log("只允许文件上传")
+      await LLAPI.set_editor(``);
+      return;
+    }
+
     const encodeData = await eencode.AES_encrypt(rawMsg, key);
 
     return `pge:${encodeData}`;
@@ -222,7 +269,7 @@
     try {
       const encodeData = await encodeMessage(element, key, (current, total) =>
         setSendButton(true, current, total)
-      );
+      , peer);
       if (!encodeData) {
         setSendButton(false);
         return;

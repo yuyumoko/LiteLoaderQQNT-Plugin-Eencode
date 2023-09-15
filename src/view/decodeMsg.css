@@ -38,3 +38,9 @@
     transition: width .2s linear;
     background: linear-gradient(269deg, #00ff00, #0ff);
 }
+
+
+.file-info p{
+    word-wrap: break-word;
+    word-break: break-all;
+}

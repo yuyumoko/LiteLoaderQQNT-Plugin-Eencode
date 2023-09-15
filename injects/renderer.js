@@ -1,5 +1,46 @@
 // 运行在 Electron 渲染进程 下的页面脚本
 const { plugin: pluginPath, data: dataPath, cache: cachePath } = LiteLoader.plugins.eencode.path;
+const ipcRenderer_on = eencode.ipcRenderer_en_on;
+
+class EventEmitter {
+  constructor() {
+    this.events = {};
+  }
+
+  on(event, listener) {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event].push(listener);
+  }
+
+  once(eventName, listener) {
+    const onceListener = (...args) => {
+      listener(...args);
+      this.off(eventName, onceListener);
+    };
+    this.on(eventName, onceListener);
+  }
+
+  off(eventName, listener) {
+    if (this.events[eventName]) {
+      this.events[eventName] = this.events[eventName].filter(
+        (fn) => fn !== listener
+      );
+    }
+  }
+
+  emit(event, ...args) {
+    const listeners = this.events[event];
+    if (listeners) {
+      listeners.forEach((listener) => {
+        listener(...args);
+      });
+    }
+  }
+}
+
+const EnEvent = new EventEmitter();
 
 class RequireApi {
   constructor(pluginPath) {
@@ -18,6 +59,15 @@ class RequireApi {
 const requireApi = new RequireApi(pluginPath);
 let config;
 
+function showMsg(msg, type = "success") {
+  Swal.fire({
+    icon: type,
+    title: msg,
+    showConfirmButton: false,
+    timer: 1500,
+  });
+}
+
 // 初始化函数
 const decodeMsgAPI = eval(
   await requireApi.read("renderer_helper/decodeMsg.js", "injects")
@@ -30,6 +80,20 @@ const encodeMsgAPI = eval(
 const encodeMenuAPI = eval(
   await requireApi.read("renderer_helper/encodeMenu.js", "injects")
 )();
+
+async function destructFileElement(filePath) {
+  const fileInfo = await eencode.getFileStatSync(filePath);
+  return {
+    elementType: 3,
+    elementId: "",
+    fileElement: {
+      fileName: fileInfo.name,
+      filePath: filePath,
+      fileSize: `${fileInfo.size}`,
+    },
+  };
+}
+
 
 // 初始化加密按钮
 let initSendButtonFlag;
@@ -126,4 +190,14 @@ async function onConfigView(view) {
   eval(configViewJS);
 }
 
+
+ipcRenderer_on("media-progerss-update", (event, args) => {
+  const notifyInfo = args[1]?.[0]?.payload?.notifyInfo
+  if (notifyInfo) {
+    EnEvent.emit("media-progerss-update-" + notifyInfo.totalSize, notifyInfo)
+  }
+    
+});
+
+// temp1.__VUE__[0].props.msgElement.fileElement
 export { onLoad, onConfigView };

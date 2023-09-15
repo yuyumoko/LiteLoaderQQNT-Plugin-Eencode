@@ -181,53 +181,110 @@
     if (!cached.autoDecrypt) {
       return;
     }
-    const targetElement = node.querySelector(
-      ".msg-content-container"
-    ).firstElementChild;
 
-    const innerHTML = targetElement.innerHTML;
-    const innerText = targetElement.innerText.trim();
+    const msgContainer = node.querySelector(".msg-content-container");
+    if (msgContainer) {
+      // 常规信息内容
+      const targetElement = msgContainer.firstElementChild;
+      const innerHTML = targetElement.innerHTML;
+      const innerText = targetElement.innerText.trim();
 
-    if (innerText.startsWith(config.encryptConfig.AES.prefix)) {
-      const text = innerText.slice(config.encryptConfig.AES.prefix.length);
+      if (innerText.startsWith(config.encryptConfig.AES.prefix)) {
+        const text = innerText.slice(config.encryptConfig.AES.prefix.length);
 
-      targetElement.innerHTML += `<hr class="horizontal-dividing-line">`;
-      targetElement.innerHTML += `<p>正在解密...</p>`;
+        targetElement.innerHTML += `<hr class="horizontal-dividing-line">`;
+        targetElement.innerHTML += `<p>正在解密...</p>`;
 
-      let result = await decryptAES(text, cached.AESKey);
-      if (!result) { 
-        const peer = await LLAPI.getPeer();
-        if (peer.chatType === "group") { 
-          // 尝试使用群ID解密
-          const AESKey = await eencode.AES_customKey(peer.chatType, peer.uid); 
-          result = await decryptAES(text, AESKey);
+        let result = await decryptAES(text, cached.AESKey);
+        if (!result) {
+          const peer = await LLAPI.getPeer();
+          if (peer.chatType === "group") {
+            // 尝试使用群ID解密
+            const AESKey = await eencode.AES_customKey(peer.chatType, peer.uid);
+            result = await decryptAES(text, AESKey);
+          }
         }
-      }
 
+        if (!result) {
+          targetElement.innerHTML = innerHTML;
+          targetElement.innerHTML += `<hr class="horizontal-dividing-line">`;
+          targetElement.innerHTML += `<p>解密失败</p>`;
+          return;
+        }
 
-      if (!result) {
         targetElement.innerHTML = innerHTML;
         targetElement.innerHTML += `<hr class="horizontal-dividing-line">`;
-        targetElement.innerHTML += `<p>解密失败</p>`;
-        return;
+        targetElement.innerHTML += `${result}`;
+
+        const message__wrapper = targetElement.parentElement.parentElement;
+        if (!message__wrapper.classList.contains("decode-msg")) {
+          message__wrapper.classList.add("decode-msg");
+        }
+
+        addOpenWeb(targetElement.querySelectorAll(".eencode-img"));
+
+        addOpenWeb(
+          targetElement.querySelectorAll(".eencode-video-play"),
+          "ondblclick",
+          true
+        );
+
+        addOpenWeb(
+          targetElement.querySelectorAll(".eencode-video-circle-play"),
+          "onclick",
+          true
+        );
       }
+    } else {
+      // 文件解密支持
+      const fileElement = node.querySelector(".file-element");
+      if (!fileElement) return;
+      if (!fileElement.title.startsWith("pge-")) return;
+      const fileInfoDiv = fileElement.querySelector(".file-info");
+      fileInfoDiv.style.display = "inline-table";
 
-      targetElement.innerHTML = innerHTML;
-      targetElement.innerHTML += `<hr class="horizontal-dividing-line">`;
-      targetElement.innerHTML += `${result}`;
-
-      const message__wrapper = targetElement.parentElement.parentElement;
-      if (!message__wrapper.classList.contains("decode-msg")) {
-        message__wrapper.classList.add("decode-msg");
+      const fileInfo = fileElement.__VUE__[0].props.msgElement.fileElement;
+      let fileName = fileInfo.fileName;
+      fileName = fileName.slice(config.encryptConfig.AES.prefix.length);
+      let fileNameExt = "";
+      if (fileName.includes(".")) {
+        fileNameExt = `.${fileName.split(".").pop()}`;
+        fileName = fileName.split(".").slice(0, -1).join(".");
       }
+      fileName = await eencode.AES_decrypt(fileName, cached.AESKey);
+      fileName += fileNameExt;
 
-      addOpenWeb(targetElement.querySelectorAll(".eencode-img"));
+      fileInfoDiv.innerHTML += `<hr class="horizontal-dividing-line">`;
+      fileInfoDiv.innerHTML += `<p data-v-91f9511c="">文件名: ${fileName}</p>`;
+      fileInfoDiv.innerHTML += `<p data-v-91f9511c="">保存文件时, 自动解密</p>`;
 
-      addOpenWeb(targetElement.querySelectorAll(".eencode-video-play"), "ondblclick", true);
+      
+      const filePath = fileInfo.filePath;
+      const fileSize = fileInfo.fileSize;
 
-      addOpenWeb(targetElement.querySelectorAll(".eencode-video-circle-play"), "onclick", true);
-
+      const autoDecryptFile = (fileState) => {
+        // console.log(fileState)
+        const timer = setInterval(async () => {
+          const isExist = await eencode.existsSync(filePath);
+          if (isExist) {
+            clearInterval(timer);
+            await eencode.DecryptFile(filePath);
+            await eencode.deleteFileSync(filePath);
+            console.log("文件解密完成");
+            showMsg("文件解密成功!");
+          }
+        }, 1000);
+      };
+      
+      EnEvent.once("media-progerss-update-" + fileSize, autoDecryptFile);
     }
+
+
+    
+
+    
+
+    
   }
   return {
     handleDecodeImageMessage,

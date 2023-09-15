@@ -6,25 +6,25 @@ const crypto = require("crypto");
 const algorithm = "aes-256-ctr";
 
 
-function encrypt(text, key, iv_length) {
+function encrypt(text, key, iv_length, buffType = "hex") {
   // let iv = crypto.randomBytes(iv_length);
   let iv = key.substring(0, iv_length);
   let cipher = crypto.createCipheriv(algorithm, key, iv);
   let encrypted = cipher.update(text);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return encrypted.toString("hex");
+  return encrypted.toString(buffType);
 }
 
-function decrypt(text, key, iv_length) {
+function decrypt(text, key, iv_length, buffType = "hex") {
   let iv;
   if (text.includes(":")) {
     let textParts = text.split(":");
-    iv = Buffer.from(textParts.shift(), "hex");
+    iv = Buffer.from(textParts.shift(), buffType);
     text = textParts[0];
   } else {
     iv = key.substring(0, iv_length);
   }
-  let encryptedText = Buffer.from(text, "hex");
+  let encryptedText = Buffer.from(text, buffType);
   let decipher = crypto.createDecipheriv(algorithm, key, iv);
   let decrypted = decipher.update(encryptedText);
   decrypted = Buffer.concat([decrypted, decipher.final()]);

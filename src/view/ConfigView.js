@@ -78,15 +78,6 @@
     }
   });
 
-  function showMsg(msg, type = "success") {
-    Swal.fire({
-      icon: type,
-      title: msg,
-      showConfirmButton: false,
-      timer: 1500,
-    });
-  }
-
   //普通加密模式设置
   let encryptConfig = config.encryptConfig;
 

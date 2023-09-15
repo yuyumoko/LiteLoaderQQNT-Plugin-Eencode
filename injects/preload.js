@@ -8,6 +8,10 @@ const get_fn_key = (func_name) => `${event_prefix}.${slug}.${func_name}`;
 
 // 在window对象下导出只读对象
 contextBridge.exposeInMainWorld(slug, {
+  ipcRenderer_en_on: (channel, callback) => {
+    ipcRenderer.on(channel, callback);
+  },
+
   restart: () => ipcRenderer.invoke(get_fn_key("restart")),
 
   OpenWeb: (url) => ipcRenderer.invoke(get_fn_key("OpenWeb"), url),
@@ -29,8 +33,12 @@ contextBridge.exposeInMainWorld(slug, {
   FixVideoFile: (filePath) =>
     ipcRenderer.invoke(get_fn_key("FixVideoFile"), filePath),
 
+  getFileStatSync: (filePath) =>
+    ipcRenderer.invoke(get_fn_key("getFileStatSync"), filePath),
   readFileSync: (filePath) =>
     ipcRenderer.invoke(get_fn_key("readFileSync"), filePath),
+  deleteFileSync: (filePath) =>
+    ipcRenderer.invoke(get_fn_key("deleteFileSync"), filePath),
   existsSync: (filePath) =>
     ipcRenderer.invoke(get_fn_key("existsSync"), filePath),
 
@@ -50,7 +58,7 @@ contextBridge.exposeInMainWorld(slug, {
   AES_decrypt: (text, key) =>
     ipcRenderer.invoke(get_fn_key("AES_decrypt"), text, key),
   AES_customKey: (chatType, uid) =>
-  ipcRenderer.invoke(get_fn_key("AES_customKey"), chatType, uid),
+    ipcRenderer.invoke(get_fn_key("AES_customKey"), chatType, uid),
 
   EncryptFile: (filePath, encryptType, key, iv) =>
     ipcRenderer.invoke(
