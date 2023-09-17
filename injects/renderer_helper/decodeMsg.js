@@ -191,7 +191,7 @@
 
       if (innerText.startsWith(config.encryptConfig.AES.prefix)) {
         const text = innerText.slice(config.encryptConfig.AES.prefix.length);
-        
+
         if (!noProcessText) {
           targetElement.innerHTML += `<hr class="horizontal-dividing-line">`;
           targetElement.innerHTML += `<p>正在解密...</p>`;
@@ -213,6 +213,8 @@
           targetElement.innerHTML += `<p>解密失败</p>`;
           return;
         }
+
+        msgContainer.classList.add("decode-msg-container");
 
         targetElement.innerHTML = innerHTML;
         targetElement.innerHTML += `<hr class="horizontal-dividing-line">`;
