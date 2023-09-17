@@ -44,3 +44,7 @@
     word-wrap: break-word;
     word-break: break-all;
 }
+
+.msg-content-container {
+    padding: 5px !important;
+}
