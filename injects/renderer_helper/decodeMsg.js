@@ -176,7 +176,7 @@
     }
   }
 
-  async function messageHandler(node) {
+  async function messageHandler(node, noProcessText = false) {
     const cached = await eencode.GetCache();
     if (!cached.autoDecrypt) {
       return;
@@ -191,9 +191,11 @@
 
       if (innerText.startsWith(config.encryptConfig.AES.prefix)) {
         const text = innerText.slice(config.encryptConfig.AES.prefix.length);
-
-        targetElement.innerHTML += `<hr class="horizontal-dividing-line">`;
-        targetElement.innerHTML += `<p>正在解密...</p>`;
+        
+        if (!noProcessText) {
+          targetElement.innerHTML += `<hr class="horizontal-dividing-line">`;
+          targetElement.innerHTML += `<p>正在解密...</p>`;
+        }
 
         let result = await decryptAES(text, cached.AESKey);
         if (!result) {

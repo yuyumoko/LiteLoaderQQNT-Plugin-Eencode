@@ -133,21 +133,47 @@ async function initSendButton() {
 
 }
 
+function decodeMsgContainer(msgContainer, interval) {
+  if (msgContainer.length > 0) {
+    clearInterval(interval);
+    for (let node of msgContainer) {
+      decodeMsgAPI.messageHandler(node, true);
+    }
+  }
+}
+
 // 页面加载完成时触发   
 async function onLoad() {
-  // 转发界面解密
-  const interval3 = setInterval(async () => {
+  
+  const interval = setInterval(async () => {
+    // 转发界面解密
     if (window.location.hash.startsWith("#/forward/")) {
       const msgContainer = document.querySelectorAll(
         ".scroll-view--show-scrollbar .message-content__wrapper"
       );
-      if (msgContainer.length > 0) {
-        clearInterval(interval3);
-        for (let node of msgContainer) {
-          decodeMsgAPI.messageHandler(node);
+      decodeMsgContainer(msgContainer, interval);
+    }
+    // 历史记录
+    else if (window.location.hash.startsWith("#/record")) {
+      const msgContainer = document.querySelectorAll(".record-msg-detail");
+      decodeMsgContainer(msgContainer, interval);
+
+      let observer = new MutationObserver((mutationRecords) => {
+        for (let records of mutationRecords) {
+          for (let node of records.addedNodes) {
+            decodeMsgContainer(
+              node.querySelectorAll(".message-content__wrapper"),
+              interval
+            );
+          }
         }
-      }
-    } 
+      });
+      observer.observe(document.querySelector(".scroll-view--show-scrollbar"), {
+        childList: true,
+      });
+    } else if (window.location.href.indexOf("#/blank") == -1) {
+      clearInterval(interval);
+    }
   }, 100);
 
   config = await eencode.GetConfig();
@@ -199,5 +225,4 @@ ipcRenderer_on("media-progerss-update", (event, args) => {
     
 });
 
-// temp1.__VUE__[0].props.msgElement.fileElement
 export { onLoad, onConfigView };
