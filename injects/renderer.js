@@ -1,5 +1,9 @@
 // 运行在 Electron 渲染进程 下的页面脚本
-const { plugin: pluginPath, data: dataPath, cache: cachePath } = LiteLoader.plugins.eencode.path;
+const {
+  plugin: pluginPath,
+  data: dataPath,
+  cache: cachePath,
+} = LiteLoader.plugins.eencode.path;
 const ipcRenderer_on = eencode.ipcRenderer_en_on;
 
 class EventEmitter {
@@ -94,7 +98,6 @@ async function destructFileElement(filePath) {
   };
 }
 
-
 // 初始化加密按钮
 let initSendButtonFlag;
 async function initSendButton() {
@@ -110,27 +113,19 @@ async function initSendButton() {
   buttonEncode.addEventListener("click", async () => {
     const ck_editor = document.querySelector(".ck-editor__main");
     const p_editor = ck_editor.firstElementChild;
-    
+
     const cached = await eencode.GetCache();
     const peer = await LLAPI.getPeer();
     let AESKey;
 
     if (cached.groupEncryptMode === "groupId") {
-      
-      AESKey = await eencode.AES_customKey(peer.chatType, peer.uid); 
+      AESKey = await eencode.AES_customKey(peer.chatType, peer.uid);
     } else {
-      AESKey = cached.AESKey
+      AESKey = cached.AESKey;
     }
-    
+
     await encodeMsgAPI.sendEncodeMessage(p_editor, AESKey, peer);
-
-    // 有人反馈发送完按钮不见, 那就重新检查一下
-    initSendButtonFlag = !!document.querySelector(".eencode-send-button");
-    if (!initSendButtonFlag) 
-      await initSendButton();
-    
   });
-
 }
 
 function decodeMsgContainer(msgContainer, interval) {
@@ -142,9 +137,18 @@ function decodeMsgContainer(msgContainer, interval) {
   }
 }
 
-// 页面加载完成时触发   
+// 页面加载完成时触发
 async function onLoad() {
-  
+  let observer_btn = new MutationObserver(async (mutationRecords) => {
+    if (document.querySelector(".operation")) {
+      initSendButtonFlag = !!document.querySelector(".eencode-send-button");
+      if (!initSendButtonFlag) await initSendButton();
+    }
+  });
+  observer_btn.observe(document.querySelector(".operation").parentElement, {
+    childList: true,
+  });
+
   const interval = setInterval(async () => {
     // 转发界面解密
     if (window.location.hash.startsWith("#/forward/")) {
@@ -216,13 +220,11 @@ async function onConfigView(view) {
   eval(configViewJS);
 }
 
-
 ipcRenderer_on("media-progerss-update", (event, args) => {
-  const notifyInfo = args[1]?.[0]?.payload?.notifyInfo
+  const notifyInfo = args[1]?.[0]?.payload?.notifyInfo;
   if (notifyInfo) {
-    EnEvent.emit("media-progerss-update-" + notifyInfo.totalSize, notifyInfo)
+    EnEvent.emit("media-progerss-update-" + notifyInfo.totalSize, notifyInfo);
   }
-    
 });
 
 export { onLoad, onConfigView };
