@@ -139,16 +139,6 @@ function decodeMsgContainer(msgContainer, interval) {
 
 // 页面加载完成时触发
 async function onLoad() {
-  let observer_btn = new MutationObserver(async (mutationRecords) => {
-    if (document.querySelector(".operation")) {
-      initSendButtonFlag = !!document.querySelector(".eencode-send-button");
-      if (!initSendButtonFlag) await initSendButton();
-    }
-  });
-  observer_btn.observe(document.querySelector(".operation").parentElement, {
-    childList: true,
-  });
-
   const interval = setInterval(async () => {
     // 转发界面解密
     if (window.location.hash.startsWith("#/forward/")) {
@@ -201,6 +191,16 @@ async function onLoad() {
     if (location.href.includes("/imageViewer")) {
       encodeMenuAPI(event, true);
     }
+  });
+
+  let observer_btn = new MutationObserver(async (mutationRecords) => {
+    if (document.querySelector(".operation")) {
+      initSendButtonFlag = !!document.querySelector(".eencode-send-button");
+      if (!initSendButtonFlag) await initSendButton();
+    }
+  });
+  observer_btn.observe(document.querySelector(".operation").parentElement, {
+    childList: true,
   });
 }
 
