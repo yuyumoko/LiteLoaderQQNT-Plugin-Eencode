@@ -63,13 +63,16 @@ class RequireApi {
 const requireApi = new RequireApi(pluginPath);
 let config;
 
-function showMsg(msg, type = "success") {
-  Swal.fire({
+function showMsg(msg, type = "success", timer = 1500) {
+  const opt = {
     icon: type,
     title: msg,
-    showConfirmButton: false,
-    timer: 1500,
-  });
+    showConfirmButton: false
+  }
+  if (timer !== -1) {
+    opt.timer = timer
+  }
+  Swal.fire(opt);
 }
 
 // 初始化函数
@@ -100,6 +103,8 @@ async function destructFileElement(filePath) {
 
 // 初始化加密按钮
 let initSendButtonFlag;
+let observerBtnFlag;
+
 async function initSendButton() {
   if (initSendButtonFlag) return;
   initSendButtonFlag = true;
@@ -126,6 +131,22 @@ async function initSendButton() {
 
     await encodeMsgAPI.sendEncodeMessage(p_editor, AESKey, peer);
   });
+  if (!observerBtnFlag)
+  {
+    observerBtnFlag = true;
+    let observer_btn = new MutationObserver(async (mutationRecords) => {
+      if (document.querySelector(".operation")) {
+        initSendButtonFlag = !!document.querySelector(".eencode-send-button");
+        if (!initSendButtonFlag) await initSendButton();
+      }
+    });
+    observer_btn.observe(document.querySelector(".operation").parentElement, {
+      childList: true,
+    });
+    // (async () => {
+      
+    // })()
+  }
 }
 
 function decodeMsgContainer(msgContainer, interval) {
@@ -178,7 +199,7 @@ async function onLoad() {
   link.rel = "stylesheet";
   link.href = requireApi.resolve("view/decodeMsg.css");
   document.head.appendChild(link);
-
+  
   LLAPI.on("dom-up-messages", async (node) => {
     await initSendButton();
     await decodeMsgAPI.messageHandler(node);
@@ -193,15 +214,7 @@ async function onLoad() {
     }
   });
 
-  let observer_btn = new MutationObserver(async (mutationRecords) => {
-    if (document.querySelector(".operation")) {
-      initSendButtonFlag = !!document.querySelector(".eencode-send-button");
-      if (!initSendButtonFlag) await initSendButton();
-    }
-  });
-  observer_btn.observe(document.querySelector(".operation").parentElement, {
-    childList: true,
-  });
+  
 }
 
 // 打开设置界面时触发
