@@ -113,8 +113,8 @@
       installUpdateBtn.innerHTML = `正在更新..`;
       installUpdateBtn.setAttribute("aria-disabled", "true");
       await eencode.installUpdate();
-      installUpdateBtn.attributes.setAttribute("hidden", "")
-      view.querySelector(".restart-div").removeNamedItem("hidden");
+      installUpdateBtn.setAttribute("hidden", "")
+      view.querySelector(".restart-div").attributes.removeNamedItem("hidden");
     } catch (error) {
       showMsg(error.message);
     }
