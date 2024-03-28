@@ -6,7 +6,7 @@
       i = Math.floor(Math.log(bytes) / Math.log(k));
     return (bytes / Math.pow(k, i)).toPrecision(3) + " " + sizes[i];
   }
-  
+
   function asyncImgChecked(file) {
     return new Promise(async (resolve, reject) => {
       let video = document.createElement("video");
@@ -49,13 +49,32 @@
     let imgContext = "";
     for (const imgUrl of imgUrls) {
       if (!imgUrl) continue;
-        imgContext += `
-    <div class="image pic-element vue-component eencode-img" data-src="${imgUrl}" element-id="0" draggable="true"
-      aria-label="图像" data-v-0acd8bde="" data-v-562c0411="" data-v-fd13d650="" role="img" tabindex="-1"
-      style="width: auto;height: auto;">
-      <img class="image-content" src="${imgUrl}" data-role="pic" data-path="${imgUrl}" data-pic-sub-type="1"
-          loading="eager" data-v-0acd8bde="">
-    </div>`;
+      imgContext += `
+      <div
+      class="image pic-element vue-component eencode-img"
+      data-src="${imgUrl}"
+      element-id="0"
+      draggable="true"
+      data-v-0ba5c60c=""
+      data-v-68d8f163=""
+      data-v-59241730=""
+      role="img"
+      tabindex="-1"
+      bf-label-inner="true"
+      style="width: auto; height: auto"
+      aria-label="图片"
+    >
+      <img
+        class="image-content"
+        src="${imgUrl}"
+        data-role="pic"
+        data-path="${imgUrl}"
+        data-pic-sub-type="0"
+        loading="eager"
+        data-v-0ba5c60c=""
+      />
+    </div>
+    `;
     }
     return imgContext;
   }
@@ -101,9 +120,8 @@
         </div>
     </div>
 </div>
-    `
+    `;
     return videoContext;
-  
   }
 
   async function decryptAES(text, key) {
@@ -112,7 +130,7 @@
       return;
     }
     rawText = rawText.slice(4);
-    console.log(rawText)
+    console.log(rawText);
     const isImgStart = rawText.indexOf("img-start:\n") === 0;
 
     if (isImgStart) {
@@ -128,7 +146,7 @@
         const value = msgSplit.join(":");
         switch (type) {
           case "text":
-            rawText += `${(value)}`;
+            rawText += `${value}`;
             break;
           case "imag":
             rawText += handleDecodeImageMessage(value);
@@ -149,7 +167,7 @@
               await eencode.FixVideoFile(localPath);
             }
             rawText += await handleDecodeVideoMessage(localPath, filename);
-            break;  
+            break;
         }
       }
     } else {
@@ -166,7 +184,7 @@
     for (let i = 0; i < elements.length; i++) {
       const img = elements[i].firstElementChild;
       img[type] = async () => {
-        let path = img.src
+        let path = img.src;
         if (isDataPath) {
           path = img.getAttribute("data-path");
         }
@@ -181,17 +199,14 @@
     if (!cached.autoDecrypt) {
       return;
     }
-
     const msgContainer = node.querySelector(".msg-content-container");
     if (msgContainer) {
       // 常规信息内容
       const targetElement = msgContainer.firstElementChild;
       const innerHTML = targetElement.innerHTML;
       const innerText = targetElement.innerText.trim();
-
       if (innerText.startsWith(config.encryptConfig.AES.prefix)) {
         const text = innerText.slice(config.encryptConfig.AES.prefix.length);
-
         if (!noProcessText) {
           targetElement.innerHTML += `<hr class="horizontal-dividing-line">`;
           targetElement.innerHTML += `<p>正在解密...</p>`;
@@ -263,7 +278,6 @@
       fileInfoDiv.innerHTML += `<p data-v-91f9511c="">保存文件时, 自动解密</p>`;
       fileInfoDiv.innerHTML += `<p data-v-91f9511c="">右键菜单也可以解密文件</p>`;
 
-      
       const filePath = fileInfo.filePath;
       const fileSize = fileInfo.fileSize;
 
@@ -280,16 +294,9 @@
           }
         }, 1000);
       };
-      
+
       EnEvent.once("media-progerss-update-" + fileSize, autoDecryptFile);
     }
-
-
-    
-
-    
-
-    
   }
   return {
     handleDecodeImageMessage,

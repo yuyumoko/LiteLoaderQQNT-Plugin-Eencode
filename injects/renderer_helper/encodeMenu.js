@@ -78,8 +78,8 @@ const decryptFileHtml = `
       const qMenu = createMenu(menuHtml);
       qContextMenu.appendChild(qMenu);
 
-      const decryptFileMenu = createMenu(decryptFileHtml);
-      qContextMenu.appendChild(decryptFileMenu);
+      // const decryptFileMenu = createMenu(decryptFileHtml);
+      // qContextMenu.appendChild(decryptFileMenu);
 
       const rect = qContextMenu.getBoundingClientRect();
       if (rect.bottom > window.innerHeight) {
@@ -168,23 +168,23 @@ const decryptFileHtml = `
       });
 
       // 解密文件事件
-      decryptFileMenu.addEventListener("click", async () => {
-        qContextMenu.remove();
-        const fileElement = findParent(event.target, "file-element");
-        if (fileElement) {
-          const fileInfo = fileElement.__VUE__[0].props.msgElement.fileElement;
-          const filePath = fileInfo.filePath;
-          const isExist = await eencode.existsSync(filePath);
-          // console.log(fileInfo);
-          if (!isExist) {
-            showMsg("找不到加密文件, 请重新下载", "error");
-            return;
-          }
-          await eencode.DecryptFile(filePath);
-          await eencode.deleteFileSync(filePath);
-          showMsg("文件解密成功!");
-        }
-      });
+      // decryptFileMenu.addEventListener("click", async () => {
+      //   qContextMenu.remove();
+      //   const fileElement = findParent(event.target, "file-element");
+      //   if (fileElement) {
+      //     const fileInfo = fileElement.__VUE__[0].props.msgElement.fileElement;
+      //     const filePath = fileInfo.filePath;
+      //     const isExist = await eencode.existsSync(filePath);
+      //     // console.log(fileInfo);
+      //     if (!isExist) {
+      //       showMsg("找不到加密文件, 请重新下载", "error");
+      //       return;
+      //     }
+      //     await eencode.DecryptFile(filePath);
+      //     await eencode.deleteFileSync(filePath);
+      //     showMsg("文件解密成功!");
+      //   }
+      // });
 
 
     }, 50);

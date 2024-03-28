@@ -30,7 +30,7 @@ let currentRequest;
 
 // 加载插件时触发
 async function onLoad(plugin) {
-  const cachePath = plugin.path.cache;
+  const cachePath = path.join(plugin.path.data, "cache");
   
   const _config = new Config(plugin.path.data);
   const config = _config.load();
@@ -304,8 +304,8 @@ function onBrowserWindowCreated(window, plugin) {
   }
 }
 
-// 这两个函数都是可选的
-module.exports = {
-  onLoad,
-  onBrowserWindowCreated,
-};
+onLoad(LiteLoader.plugins["eencode"])
+
+// module.exports = {
+//   onBrowserWindowCreated,
+// };

@@ -1,15 +1,15 @@
 {
-	"manifest_version": 3,
+	"manifest_version": 4,
 	"type": "extension",
 	"name": "歪比巴卜",
 	"slug": "eencode",
 	"description": "文字图片消息加密~",
 	"version": "1.0.0",
-	"thumbnail": "./src/icons/icon.png",
-	"author": {
+	"icon": "./src/icons/icon.png",
+	"authors": [{
 		"name": "erinilis",
 		"link": "https://github.com/yuyumoko"
-	},
+	}],
 	"repository": {
 		"repo": "yuyumoko/LiteLoaderQQNT-Plugin-Eencode",
 		"branch": "main"

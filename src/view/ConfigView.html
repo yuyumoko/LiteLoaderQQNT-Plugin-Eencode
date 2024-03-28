@@ -1,126 +1,126 @@
-<div class="wrap">
-    <div class="vertical-list-item">
-        <h2>自动解密消息</h2>
-        <div class="switchBackgroundImage q-switch is-active" id="autoDecode">
-            <span class="q-switch__handle"></span>
-        </div>
-    </div>
-    <hr class="horizontal-dividing-line">
-    <div class="vertical-list-item">
-        <h2>是否显示密文</h2>
-        <div class="switchBackgroundImage q-switch is-active" id="showRawMsg">
-            <span class="q-switch__handle"></span>
-        </div>
-    </div>
-    <hr class="horizontal-dividing-line">
-    <div class="vertical-list-item">
-        <h2>每次启动自动清空缓存</h2>
-        <div class="switchBackgroundImage q-switch is-active" id="autoDeleteCache">
-            <span class="q-switch__handle"></span>
-        </div>
+<setting-section data-title="常规设置">
+    <setting-panel>
+
+        <setting-list data-direction="column">
+            <setting-item>
+                <setting-text>自动解密消息</setting-text>
+                <setting-switch is-active id="autoDecode"></setting-switch>
+            </setting-item>
+            <data-orientation data-orientation="horizontal"></data-orientation>
+        </setting-list>
+
+        <setting-list data-direction="column">
+            <setting-item>
+                <setting-text>是否显示密文</setting-text>
+                <setting-switch is-active id="showRawMsg"></setting-switch>
+            </setting-item>
+            <data-orientation data-orientation="horizontal"></data-orientation>
+        </setting-list>
+
+        <setting-list data-direction="column">
+            <setting-item>
+                <setting-text>每次启动自动清空缓存</setting-text>
+                <setting-switch is-active id="autoDeleteCache"></setting-switch>
+            </setting-item>
+            <data-orientation data-orientation="horizontal"></data-orientation>
+        </setting-list>
+
+        <setting-list data-direction="column">
+            <setting-item>
+                <setting-text>缓存目录</setting-text>
+                <input class="path-input text_color cache-path" type="text" spellcheck="false" readonly>
+                <setting-button data-type="secondary" class="open-cache" style="padding-left: 10px;">打开目录</setting-button>
+            </setting-item>
+            <data-orientation data-orientation="horizontal"></data-orientation>
+        </setting-list>
+
+        <setting-list data-direction="column">
+            <setting-item>
+                <setting-text data-type="secondary">此目录无法在这修改, 请修改LiteLoader缓存目录使其改变</setting-text>
+                <setting-text data-type="secondary" class="cache-size"></setting-text>
+            </setting-item>
+        </setting-list>
+
+    </setting-panel>
+</setting-section>
+
+
+<setting-section data-title="加密模式">
+    <setting-panel>
+
+        <setting-list data-direction="column">
+            <setting-item>
+                <setting-text data-type="secondary">普通加密: 则使用AES加密信息</setting-text>
+            </setting-item>
+            <setting-item>
+                <setting-text data-type="secondary">分群加密: 在普通模式的基础上使用群号加密, 无法使用加密信息发送其他群</setting-text>
+            </setting-item>
+            <data-orientation data-orientation="horizontal"></data-orientation>
+        </setting-list>
+
+        <setting-list data-direction="column">
+            <setting-item>
+                <setting-text>请选择模式</setting-text>
+                <setting-select class="encrypt-mode">
+                    <setting-option data-value="normal">普通加密</setting-option>
+                    <setting-option data-value="groupId">分群加密</setting-option>
+                </setting-select>
+                
+            </setting-item>
+            <data-orientation data-orientation="horizontal"></data-orientation>
+        </setting-list>
         
-    </div>
-    <div class="vertical-list-item">
-        <input style="width:70%" class="path-input text_color cache-path" type="text" spellcheck="false" readonly="true">
-        <div class="ops-btns">
+    </setting-panel>
+</setting-section>
+
+<setting-section data-title="普通加密设置" id="AES-config">
+    <setting-panel>
+
+        <setting-list data-direction="column">
+            <setting-item>
+                <setting-text>密钥</setting-text>
+                <input class="path-input text_color" type="text" spellcheck="false" id="AES-Key">
+            </setting-item>
             
-            <button class="q-button q-button--secondary q-button--small open-cache">打开目录</button>
-        </div>
-    </div>
-    <div class="vertical-list-item">
-        <div class="secondary-text">此目录无法在这修改, 请修改LiteLoader缓存目录使其改变</div>
-        <div class="secondary-text cache-size"></div>
-    </div>
-</div>
+            <setting-text>注意: 如果修改可能无法解密别人使用默认秘钥加密的信息</setting-text>
+        </setting-list>
+        <data-orientation data-orientation="horizontal"></data-orientation>
+        
 
+        <setting-list data-direction="row">
+            <setting-item>
+                <setting-button data-type="secondary" class="create">随机秘钥(需保存)</setting-button>
+                <setting-button data-type="secondary" class="reset">恢复默认</setting-button>
+                <setting-button data-type="secondary" class="save">保存</setting-button>
+            </setting-item>
+        </setting-list>
 
+    </setting-panel>
+</setting-section>
 
-<h1 class="label">消息加密模式</h1>
-<div class="wrap eencode-config">
-    <div style="margin-top: 10px"></div>
-    <p class="secondary-text">普通加密: 则使用AES加密信息</p>
-    <p class="secondary-text">分群加密: 在普通模式的基础上使用群号加密, 无法使用加密信息发送其他群</p>
+<setting-section data-title="版本信息" id="eencode-current-version">
+    <setting-panel>
+        <setting-list data-direction="column">
 
-    <hr class="horizontal-dividing-line" style="margin-top: 10px">
-    <div class="vertical-list-item">
-        <h2 >请选择模式</h2>
-        <div class="ops-selects">
-            <div class="q-pulldown-menu small-size" data-id="plugin_type_1">
-                <div class="q-pulldown-menu-button">
-                    <input class="content" type="text" readonly spellcheck="false">
-                    <svg class="icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 6.0001L8.00004 10L4 6" stroke="currentColor" stroke-linejoin="round"></path>
-                    </svg>
-                </div>
-                <div class="q-context-menu hidden">
-                    <ul class="q-pulldown-menu-list small-size">
-                        <li class="q-pulldown-menu-list-item" data-value="normal">
-                            <span class="content">普通加密</span>
-                            <span class="icon">
-                                <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M2 7L6.00001 11L14 3" stroke="currentColor" stroke-linejoin="round"></path>
-                                </svg>
-                            </span>
-                        </li>
-                        <li class="q-pulldown-menu-list-item" data-value="groupId">
-                            <span class="content">分群加密</span>
-                            <span class="icon">
-                                <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M2 7L6.00001 11L14 3" stroke="currentColor" stroke-linejoin="round"></path>
-                                </svg>
-                            </span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+            <setting-item>
+                <setting-text class="has-find">正在查看是否有新版...</setting-text>
+                <setting-item data-direction="row">
+                    <setting-button data-type="secondary" class="eencode-install-update hidden" style="padding-right: 10px;">立即更新</setting-button>
+                    <setting-button data-type="secondary" id="eencode-checkUpdate">重新检查更新</setting-button>
+                </setting-item>
+            </setting-item>
+            <setting-item>
+                <setting-text class="update-length">正在获取差异文件...</setting-text>
+                <setting-text class="update-check-date"></setting-text>
+            </setting-item>
 
-<h1 class="label">普通加密模式设置</h1>
-<div class="wrap" id="AES-config">
-    <div class="vertical-list-item">
-        <h2>密钥</h2>
-        <input class="path-input text_color" type="text" spellcheck="false" id="AES-Key">
-    </div>
-    <hr class="horizontal-dividing-line">
-    <div class="vertical-list-item">
-    <p>注意: 如果修改可能无法解密别人使用默认秘钥加密的信息</p>
-    </div>
-    <div class="vertical-list-item">
-        <span></span>
-        <div class="ops-btns">
-            <button class="q-button q-button--secondary q-button--small create">随机秘钥(需保存)</button>
-            <button class="q-button q-button--secondary q-button--small reset">恢复默认</button>
-            <button class="q-button q-button--secondary q-button--small save">保存</button>
-        </div>
-    </div>
-</div>
+            <setting-item class="restart-wrap hidden">
+                <setting-text>更新完成, 重新启动QQ生效</setting-text>
+                <setting-button data-type="secondary" class="eencode-restart ">重新启动</setting-button>
+            </setting-item>
 
+        </setting-list>
 
-<h1 class="label">当前版本版本 <span id="eencode-current-version"></span></h1>
-<div class="wrap" id="eencode-version">
-    <div class="vertical-list-item">
-        <div class="has-find">
-            <h2>正在查看是否有新版...</h2>
-        </div>
-        <div class="ops-btns">
-            <button class="q-button q-button--secondary q-button--small" id="eencode-checkUpdate">重新检查更新</button>
-        </div>
-    </div>
-    <div class="vertical-list-item">
-        <div>
-            <p class="update-length">等待获取...</p>
-            <p class="update-check-date"></p>
-        </div>
-        <div class="ops-btns">
-            <button class="q-button q-button--secondary q-button--small eencode-install-update hidden">立即更新</button>
-        </div>
-    </div>
-    <div class="vertical-list-item restart-wrap hidden">
-        <h2>更新完成, 重新启动QQ生效</h2>
-        <div class="ops-btns">
-            <button class="q-button q-button--secondary q-button--small eencode-restart">重新启动</button>
-        </div>
-    </div>
-</div>
+    </setting-panel>
+    
+</setting-section>

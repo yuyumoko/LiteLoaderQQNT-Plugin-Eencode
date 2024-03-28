@@ -30,7 +30,7 @@ async function githubHashData(proxy = true) {
   const branch = manifestConfig.repository.branch;
   let baseUrl = `https://raw.githubusercontent.com/${repo}/${branch}/hash.json`;
   if (proxy) {
-    baseUrl = `https://ghproxy.com/${baseUrl}`;
+    baseUrl = `https://mirror.ghproxy.com/${baseUrl}`;
   }
   const res = await promisify(request)(baseUrl);
   return JSON.parse(res.body);

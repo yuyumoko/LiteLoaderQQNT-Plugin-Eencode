@@ -2,9 +2,10 @@
 const {
   plugin: pluginPath,
   data: dataPath,
-  cache: cachePath,
+  // cache: cachePath,
 } = LiteLoader.plugins.eencode.path;
 const ipcRenderer_on = eencode.ipcRenderer_en_on;
+const cachePath = dataPath + "/cache";
 
 class EventEmitter {
   constructor() {
@@ -48,7 +49,7 @@ const EnEvent = new EventEmitter();
 
 class RequireApi {
   constructor(pluginPath) {
-    this.srcDir = `llqqnt://local-file/${pluginPath}`;
+    this.srcDir = `local:///${pluginPath}`;
   }
 
   resolve(filePath, root = "src") {
@@ -64,15 +65,16 @@ const requireApi = new RequireApi(pluginPath);
 let config;
 
 function showMsg(msg, type = "success", timer = 1500) {
-  const opt = {
-    icon: type,
-    title: msg,
-    showConfirmButton: false
-  }
-  if (timer !== -1) {
-    opt.timer = timer
-  }
-  Swal.fire(opt);
+  // const opt = {
+  //   icon: type,
+  //   title: msg,
+  //   showConfirmButton: false
+  // }
+  // if (timer !== -1) {
+  //   opt.timer = timer
+  // }
+  // Swal.fire(opt);
+  alert(msg);
 }
 
 // 初始化函数
@@ -131,8 +133,7 @@ async function initSendButton() {
 
     await encodeMsgAPI.sendEncodeMessage(p_editor, AESKey, peer);
   });
-  if (!observerBtnFlag)
-  {
+  if (!observerBtnFlag) {
     observerBtnFlag = true;
     let observer_btn = new MutationObserver(async (mutationRecords) => {
       if (document.querySelector(".operation")) {
@@ -144,7 +145,7 @@ async function initSendButton() {
       childList: true,
     });
     // (async () => {
-      
+
     // })()
   }
 }
@@ -158,11 +159,23 @@ function decodeMsgContainer(msgContainer, interval) {
   }
 }
 
+function waitDOMLoaded(element, callback, ms = 100) {
+  const interval = setInterval(() => {
+    if (document.querySelector(element)) {
+      clearInterval(interval);
+      callback();
+    }
+  }, ms);
+}
+
+onLoad();
+
 // 页面加载完成时触发
 async function onLoad() {
   const interval = setInterval(async () => {
     // 转发界面解密
     if (window.location.hash.startsWith("#/forward/")) {
+      config = await eencode.GetConfig();
       const msgContainer = document.querySelectorAll(
         ".scroll-view--show-scrollbar .message-content__wrapper"
       );
@@ -170,9 +183,9 @@ async function onLoad() {
     }
     // 历史记录
     else if (window.location.hash.startsWith("#/record")) {
+      config = await eencode.GetConfig();
       const msgContainer = document.querySelectorAll(".record-msg-detail");
       decodeMsgContainer(msgContainer, interval);
-
       let observer = new MutationObserver((mutationRecords) => {
         for (let records of mutationRecords) {
           for (let node of records.addedNodes) {
@@ -191,34 +204,38 @@ async function onLoad() {
     }
   }, 100);
 
-  config = await eencode.GetConfig();
-  initSendButtonFlag = !!document.querySelector(".eencode-send-button");
+  let sendBtnInterval = setInterval(async () => {
+    if (document.querySelector(".chat-input-area .operation .send-btn-wrap")) {
+      clearInterval(sendBtnInterval);
 
-  // 插入设置页样式
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = requireApi.resolve("view/decodeMsg.css");
-  document.head.appendChild(link);
-  
-  LLAPI.on("dom-up-messages", async (node) => {
-    await initSendButton();
-    await decodeMsgAPI.messageHandler(node);
-  });
+      config = await eencode.GetConfig();
+      initSendButtonFlag = !!document.querySelector(".eencode-send-button");
+      if (!initSendButtonFlag) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = requireApi.resolve("view/decodeMsg.css");
+        document.head.appendChild(link);
 
-  LLAPI.on("context-msg-menu", (event) => encodeMenuAPI(event));
-  document.addEventListener("contextmenu", (event) => {
-    var element = document.querySelector(".main-area__image");
-    if (element == null) return;
-    if (location.href.includes("/imageViewer")) {
-      encodeMenuAPI(event, true);
+        LLAPI.on("dom-up-messages", async (node) => {
+          await decodeMsgAPI.messageHandler(node);
+        });
+
+        LLAPI.on("context-msg-menu", (event) => encodeMenuAPI(event));
+        document.addEventListener("contextmenu", (event) => {
+          var element = document.querySelector(".main-area__image");
+          if (element == null) return;
+          if (location.href.includes("/imageViewer")) {
+            encodeMenuAPI(event, true);
+          }
+        });
+        await initSendButton();
+      }
     }
-  });
-
-  
+  }, 100);
 }
 
 // 打开设置界面时触发
-async function onConfigView(view) {
+export const onSettingWindowCreated = async (view) => {
   // 插入设置页
   const htmlText = await requireApi.read("view/ConfigView.html");
   view.insertAdjacentHTML("afterbegin", htmlText);
@@ -231,13 +248,13 @@ async function onConfigView(view) {
 
   const configViewJS = await requireApi.read("view/ConfigView.js");
   eval(configViewJS);
-}
+};
 
-ipcRenderer_on("media-progerss-update", (event, args) => {
-  const notifyInfo = args[1]?.[0]?.payload?.notifyInfo;
-  if (notifyInfo) {
-    EnEvent.emit("media-progerss-update-" + notifyInfo.totalSize, notifyInfo);
-  }
-});
+// ipcRenderer_on("media-progerss-update", (event, args) => {
+//   const notifyInfo = args[1]?.[0]?.payload?.notifyInfo;
+//   if (notifyInfo) {
+//     EnEvent.emit("media-progerss-update-" + notifyInfo.totalSize, notifyInfo);
+//   }
+// });
 
-export { onLoad, onConfigView };
+// export { onSettingWindowCreated };

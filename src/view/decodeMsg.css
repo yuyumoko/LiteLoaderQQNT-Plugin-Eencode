@@ -10,8 +10,10 @@
     margin: 3px 3px 15px
 }
 
-.eencode-send-button {
+.eencode-send-button-wrap {
     margin-right: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 .hidden {
@@ -19,6 +21,8 @@
 }
 
 .g-container {
+    float: left;
+    margin-right: 10px;
     width: 240px;
     height: 25px;
     border-radius: 25px;

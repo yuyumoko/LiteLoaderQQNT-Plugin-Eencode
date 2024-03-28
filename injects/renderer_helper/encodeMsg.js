@@ -1,16 +1,16 @@
 () => {
   const encodeProcessHtml = `
-<div class="av-call-status horseman vue-component" data-v-be688bd6="" data-v-40da1fb0="">
-  <div class="av-call-info" data-v-be688bd6="">
-    <div class="content-text" data-v-be688bd6="" style="padding-right: 10px;">加密进度</div>
+<div class="av-call-status horseman vue-component" data-v-9e47eb6c="" data-v-5e6159b0="" style="background: aliceblue;padding: 5px;">
+  <div class="av-call-info" data-v-9e47eb6c="">
+    <div class="content-text" data-v-9e47eb6c="" style="padding-right: 10px;float: left;">加密进度</div>
     <div class="g-container">
       <span class="g-text"></span>
       <div class="g-progress"></div>
     </div>
   </div>
-  <div class="av-call-btns BUTTONS_ORDER" data-v-be688bd6="">
+  <div class="av-call-btns BUTTONS_ORDER" data-v-9e47eb6c="">
     <button class="q-button q-button--secondary q-button--small vue-component cancel-send" aria-disabled="false" aria-busy="false"
-      data-v-be688bd6="">
+      data-v-9e47eb6c="">
       <span class="q-button__slot-warp ">取消加密</span>
     </button>
   </div>
@@ -87,6 +87,7 @@
     if (isSend) {
       buttonEncode.classList.add("send--disabled");
       buttonEncode.innerText = `正在加密`;
+      console.log(`current: ${current}, total: ${total}`)
       setProcess(current, total);
     } else {
       buttonEncode.classList.remove("send--disabled");
@@ -122,7 +123,7 @@
     for (let line of element.childNodes) {
       const lineLen = line.childNodes.length - 1;
       for (let msg of line.childNodes) {
-        if (process) process((count += 1), lineLen);
+        if (process) process((count += 1), lineLen === 0 ? 1 : lineLen);
         switch (msg.nodeName) {
           case "MSG-IMG":
             try {
@@ -138,11 +139,12 @@
                 console.log("用户取消");
                 return;
               }
-              Swal.fire({
-                icon: "error",
-                title: "上传失败",
-                text: "图片上传失败, 请检查网络",
-              });
+              // Swal.fire({
+              //   icon: "error",
+              //   title: "上传失败",
+              //   text: "图片上传失败, 请检查网络",
+              // });
+              alert("图片上传失败, 请检查网络")
               console.log(error.message);
             }
             break;
@@ -166,11 +168,12 @@
               if (isVideo) {
                 let uploadResult = (await uploadImage([filePath], true))[0];
                 if (!uploadResult) {
-                  Swal.fire({
-                    icon: "error",
-                    title: "上传失败",
-                    text: "可能超出文件大小",
-                  });
+                  // Swal.fire({
+                  //   icon: "error",
+                  //   title: "上传失败",
+                  //   text: "可能超出文件大小",
+                  // });
+                  alert("可能超出文件大小")
                   return;
                 }
                 uploadResult += "-mp4";
@@ -221,11 +224,12 @@
                 console.log("用户取消");
                 return;
               }
-              Swal.fire({
-                icon: "error",
-                title: "上传失败",
-                text: "文件上传失败, 可能是太大, 限制10MB以内",
-              });
+              // Swal.fire({
+              //   icon: "error",
+              //   title: "上传失败",
+              //   text: "文件上传失败, 可能是太大, 限制10MB以内",
+              // });
+              alert("文件上传失败, 可能是太大, 限制10MB以内")
               console.log(error.message);
             }
         }
@@ -265,7 +269,7 @@
 
   async function sendEncodeMessage(element, key, peer) {
     if (element.innerText.trim() === "") return;
-
+    
     try {
       const encodeData = await encodeMessage(element, key, (current, total) =>
         setSendButton(true, current, total)
@@ -281,9 +285,9 @@
           content: encodeData,
         },
       ];
-      await LLAPI.sendMessage(peer, elements);
-      await LLAPI.set_editor(``);
       setSendButton(false);
+      await LLAPI.set_editor(``);
+      await LLAPI.sendMessage(peer, elements);
     } catch (error) {
       setSendButton(false);
       console.error(error);
