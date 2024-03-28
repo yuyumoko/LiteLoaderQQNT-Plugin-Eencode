@@ -105,19 +105,20 @@
             <setting-item>
                 <setting-text class="has-find">正在查看是否有新版...</setting-text>
                 <setting-item data-direction="row">
-                    <setting-button data-type="secondary" class="eencode-install-update hidden" style="padding-right: 10px;">立即更新</setting-button>
+                    <setting-button data-type="secondary" class="eencode-install-update" hidden style="padding-right: 10px;">立即更新</setting-button>
                     <setting-button data-type="secondary" id="eencode-checkUpdate">重新检查更新</setting-button>
                 </setting-item>
             </setting-item>
             <setting-item>
-                <setting-text class="update-length">正在获取差异文件...</setting-text>
+                <setting-text class="update-length"></setting-text>
                 <setting-text class="update-check-date"></setting-text>
             </setting-item>
-
-            <setting-item class="restart-wrap hidden">
-                <setting-text>更新完成, 重新启动QQ生效</setting-text>
-                <setting-button data-type="secondary" class="eencode-restart ">重新启动</setting-button>
-            </setting-item>
+            <div class="restart-div" hidden>
+                <setting-item class="restart-wrap">
+                    <setting-text>更新完成, 重新启动QQ生效</setting-text>
+                    <setting-button data-type="secondary" class="eencode-restart">重新启动</setting-button>
+                </setting-item>
+            </div>
 
         </setting-list>
 

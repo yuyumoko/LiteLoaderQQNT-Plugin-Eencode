@@ -110,11 +110,11 @@
 
   installUpdateBtn.addEventListener("click", async () => {
     try {
-      installUpdateBtn.innerHTML = `正在获取..`;
+      installUpdateBtn.innerHTML = `正在更新..`;
       installUpdateBtn.setAttribute("aria-disabled", "true");
       await eencode.installUpdate();
-      installUpdateBtn.classList.add("hidden");
-      view.querySelector(".restart-wrap").classList.remove("hidden");
+      installUpdateBtn.attributes.setAttribute("hidden", "")
+      view.querySelector(".restart-div").removeNamedItem("hidden");
     } catch (error) {
       showMsg(error.message);
     }
@@ -124,10 +124,9 @@
     if (find) {
       hasFindVersionText.innerHTML = `<h2 style="color: coral;">发现新的版本, 请更新!</h2>`;
       updateLengthText.innerHTML = `有${updateLength}个文件需要更新`;
-      installUpdateBtn.classList.remove("hidden");
+      installUpdateBtn.attributes.removeNamedItem("hidden");
     } else {
       hasFindVersionText.innerHTML = `<h2>已经是最新版本, 无需更新</h2>`;
-      installUpdateBtn.classList.add("hidden");
     }
     checkDateText.innerHTML = `检查时间: ${new Date().toLocaleString()}`;
   }
