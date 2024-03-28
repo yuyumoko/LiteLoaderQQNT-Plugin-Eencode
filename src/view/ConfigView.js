@@ -124,7 +124,9 @@
     if (find) {
       hasFindVersionText.innerHTML = `<h2 style="color: coral;">发现新的版本, 请更新!</h2>`;
       updateLengthText.innerHTML = `有${updateLength}个文件需要更新`;
-      installUpdateBtn.attributes.removeNamedItem("hidden");
+      if (installUpdateBtn.attributes.getNamedItem("hidden")) {
+        installUpdateBtn.attributes.removeNamedItem("hidden");
+      }
     } else {
       hasFindVersionText.innerHTML = `<h2>已经是最新版本, 无需更新</h2>`;
     }
@@ -146,7 +148,6 @@
     } catch (error) {
       console.log(error);
       checkUpdateBtn.innerHTML = "获取失败, 请重新获取";
-      checkUpdateBtn.classList.remove("is-disabled");
     }
   }
 
