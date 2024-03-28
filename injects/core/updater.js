@@ -95,7 +95,7 @@ class Updater {
     const branch = manifestConfig.repository.branch;
     let baseUrl = `https://raw.githubusercontent.com/${repo}/${branch}/`;
     if (proxy) {
-      baseUrl = `https://ghproxy.com/${baseUrl}`;
+      baseUrl = `https://mirror.ghproxy.com/${baseUrl}`;
     }
 
     for (const urlPath of this.updateUrlPath) {
