@@ -230,15 +230,11 @@
         }
 
         msgContainer.classList.add("decode-msg-container");
-
+        msgContainer.classList.add("decode-msg");
         targetElement.innerHTML = innerHTML;
         targetElement.innerHTML += `<hr class="horizontal-dividing-line">`;
         targetElement.innerHTML += `${result}`;
 
-        const message__wrapper = targetElement.parentElement.parentElement;
-        if (!message__wrapper.classList.contains("decode-msg")) {
-          message__wrapper.classList.add("decode-msg");
-        }
 
         addOpenWeb(targetElement.querySelectorAll(".eencode-img"));
 
