@@ -12,7 +12,10 @@
 	}],
 	"repository": {
 		"repo": "yuyumoko/LiteLoaderQQNT-Plugin-Eencode",
-		"branch": "main"
+		"branch": "main",
+		"release": {
+            "tag": "2.0.0"
+        }
 	},
 	"platform": ["win32", "linux", "darwin"],
 	"injects": {
