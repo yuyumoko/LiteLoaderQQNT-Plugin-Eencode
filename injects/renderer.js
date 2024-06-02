@@ -107,13 +107,25 @@ async function destructFileElement(filePath) {
 let initSendButtonFlag;
 let observerBtnFlag;
 
+function createSendButton() {
+  const btn_wrap = document.querySelector(".send-btn-wrap").cloneNode(true);
+  btn_wrap.classList.add("eencode-send-button-wrap");
+  btn_wrap.querySelector(".send").classList.remove("send--disabled");
+  const send_msg_btn = btn_wrap.querySelector(".send-msg");
+  send_msg_btn.classList.add("eencode-send-button");
+  send_msg_btn.innerText = "加密发送";
+
+  const operation = document.querySelector(".operation");
+  operation.insertAdjacentElement("afterbegin", btn_wrap);
+}
+
+
+
 async function initSendButton() {
   if (initSendButtonFlag) return;
   initSendButtonFlag = true;
 
-  const buttonHtmlText = await requireApi.read("view/SendButton.html");
-  const operation = document.querySelector(".operation");
-  operation.insertAdjacentHTML("afterbegin", buttonHtmlText);
+  createSendButton();
 
   const buttonEncode = document.querySelector(".eencode-send-button");
 

@@ -55,9 +55,6 @@
       data-src="${imgUrl}"
       element-id="0"
       draggable="true"
-      data-v-0ba5c60c=""
-      data-v-68d8f163=""
-      data-v-59241730=""
       role="img"
       tabindex="-1"
       bf-label-inner="true"
@@ -71,7 +68,7 @@
         data-path="${imgUrl}"
         data-pic-sub-type="0"
         loading="eager"
-        data-v-0ba5c60c=""
+        style="width: 100%; height: 100%; object-fit: contain"
       />
     </div>
     `;
