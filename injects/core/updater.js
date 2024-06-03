@@ -103,7 +103,14 @@ class Updater {
       if (processCallback) {
         processCallback(urlPath);
       }
+
       const updateRes = await promisify(request.get)(updateUrl);
+
+      if (updateRes.statusCode !== 200) {
+        console.log(`update ${urlPath} failed`);
+        continue;
+      }
+      
       const updatePath = path.join(this.dirPath, urlPath);
       fs.writeFileSync(updatePath, updateRes.body);
     }
