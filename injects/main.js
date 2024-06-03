@@ -367,6 +367,15 @@ function onBrowserWindowCreated(window, plugin) {
       window.webContents._events["-ipc-message"] = proxyEvents;
   }
 
+  window.webContents.on("ipc-message-sync", (event, channel, ...args) => {
+    if (channel == "___!boot") {
+        event.returnValue = {
+            enabled: true,
+            webContentsId: window.webContents.id.toString(),
+        };
+    }
+  });
+
 }
 
 onLoad(LiteLoader.plugins["eencode"])
