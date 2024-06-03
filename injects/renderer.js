@@ -7,6 +7,8 @@ const {
 const ipcRenderer_on = eencode.ipcRenderer_en_on;
 const cachePath = dataPath + "/cache";
 
+import { apiInstance } from "./llapi/llapi.js";
+
 class EventEmitter {
   constructor() {
     this.events = {};
@@ -46,6 +48,31 @@ class EventEmitter {
 }
 
 const EnEvent = new EventEmitter();
+
+function observerDOM() {
+  const observer = new MutationObserver((mutationsList, observer) => {
+    // 遍历每个变化
+    for (const { type, addedNodes } of mutationsList) {
+      if (type !== "childList") continue;
+      // 遍历每个新增的节点
+      addedNodes.forEach((node) => {
+        // QQ消息更新
+        if (
+          node.className === "ml-item" ||
+          node.className === "message vue-component"
+        ) {
+          EnEvent.emit("dom-up-messages", node);
+        }
+        if (node.classList?.[0] === "nav-item") {
+          EnEvent.emit("dom-up-nav-item", node);
+        }
+      });
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+observerDOM();
 
 class RequireApi {
   constructor(pluginPath) {
@@ -119,8 +146,6 @@ function createSendButton() {
   operation.insertAdjacentElement("afterbegin", btn_wrap);
 }
 
-
-
 async function initSendButton() {
   if (initSendButtonFlag) return;
   initSendButtonFlag = true;
@@ -134,7 +159,7 @@ async function initSendButton() {
     const p_editor = ck_editor.firstElementChild;
 
     const cached = await eencode.GetCache();
-    const peer = await LLAPI.getPeer();
+    const peer = await eencode.getPeer();
     let AESKey;
 
     if (cached.groupEncryptMode === "groupId") {
@@ -156,9 +181,29 @@ async function initSendButton() {
     observer_btn.observe(document.querySelector(".operation").parentElement, {
       childList: true,
     });
-    // (async () => {
 
-    // })()
+    // 监听发送文件
+    const observer_file = new MutationObserver(async (mutationRecords) => {
+      const send_file_msg = document.querySelector(".send-file-msg");
+      if (send_file_msg) {
+        const send_encode_file_btn = `
+        <button
+          class="q-button vue-component eencode-send-file-button"
+          role="button"
+          bf-label-inner="true"
+          tabindex="0"
+          aria-busy="false"
+          aria-disabled="false"
+        ><span class="q-button__slot-warp">加密发送</span></button>`;
+        send_file_msg
+          .querySelector(".q-dialog-footer")
+          .insertAdjacentHTML("afterbegin", send_encode_file_btn);
+
+        // const files = send_file_msg.__VUE__[0].root.props.items;
+        // console.log(files);
+      }
+    });
+    // observer_file.observe(document.body, { childList: true, subtree: true });
   }
 }
 
@@ -228,18 +273,18 @@ async function onLoad() {
         link.href = requireApi.resolve("view/decodeMsg.css");
         document.head.appendChild(link);
 
-        LLAPI.on("dom-up-messages", async (node) => {
+        EnEvent.on("dom-up-messages", async (node) => {
           await decodeMsgAPI.messageHandler(node);
         });
 
-        LLAPI.on("context-msg-menu", (event) => encodeMenuAPI(event));
-        document.addEventListener("contextmenu", (event) => {
-          var element = document.querySelector(".main-area__image");
-          if (element == null) return;
-          if (location.href.includes("/imageViewer")) {
-            encodeMenuAPI(event, true);
-          }
-        });
+        // LLAPI.on("context-msg-menu", (event) => encodeMenuAPI(event));
+        // document.addEventListener("contextmenu", (event) => {
+        //   var element = document.querySelector(".main-area__image");
+        //   if (element == null) return;
+        //   if (location.href.includes("/imageViewer")) {
+        //     encodeMenuAPI(event, true);
+        //   }
+        // });
         await initSendButton();
       }
     }

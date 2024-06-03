@@ -8,11 +8,18 @@ const get_fn_key = (func_name) => `${event_prefix}.${slug}.${func_name}`;
 
 // 在window对象下导出只读对象
 contextBridge.exposeInMainWorld(slug, {
+  ipcRenderer_en: ipcRenderer,
   ipcRenderer_en_on: (channel, callback) => {
     ipcRenderer.on(channel, callback);
   },
+  llapi_set_id: (id, webContentsId) => ipcRenderer.invoke(
+    get_fn_key("llapi_set_id"),
+    id, webContentsId
+),
 
   restart: () => ipcRenderer.invoke(get_fn_key("restart")),
+
+  getPeer: () => ipcRenderer.invoke(get_fn_key("getPeer")),
 
   OpenWeb: (url) => ipcRenderer.invoke(get_fn_key("OpenWeb"), url),
   OpenCacheDir: () => ipcRenderer.invoke(get_fn_key("OpenCacheDir")),

@@ -1,4 +1,4 @@
-const { ipcMain, shell, dialog, app } = require("electron");
+const { ipcMain, shell, dialog, app, BrowserWindow } = require("electron");
 
 const fs = require("fs");
 const path = require("path");
@@ -14,6 +14,9 @@ const { Updater } = require("./core/updater");
 
 const { calcDirSizeStr } = require("./utils/tools");
 
+
+const peer = {};
+const pendingCallbacks = {};
 
 const PNG_HEARD = Buffer.from([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49,
@@ -67,6 +70,17 @@ async function onLoad(plugin) {
     app.relaunch();
     app.exit(0);
   });
+
+  ipcHandle.fn("getPeer", (event) => peer);
+  ipcHandle.fn("llapi_set_id", (event, id, webContentsId) => {
+    try {
+      pendingCallbacks[id] = "LL_DOWN_" + id;
+    } catch (error) {
+        output(error);
+        return {};
+    }
+  });
+
 
   ipcHandle.fn("OpenWeb", (event, url) => shell.openExternal(url));
   ipcHandle.fn("OpenCacheDir", (event) => shell.openPath(cachePath));
@@ -273,10 +287,8 @@ async function onLoad(plugin) {
 
 // 创建窗口时触发
 function onBrowserWindowCreated(window, plugin) {
-  const original_send =
-    (window.webContents.__qqntim_original_object &&
-      window.webContents.__qqntim_original_object.send) ||
-    window.webContents.send;
+
+  const original_send = window.webContents.send;
   const patched_send = (channel, ...args) => {
     // if (args?.[1]?.[0]?.cmdName) {
     //   console.log(args?.[1]?.[0]?.cmdName);
@@ -287,25 +299,78 @@ function onBrowserWindowCreated(window, plugin) {
     // console.log(args?.[1]?.[0]?.cmdName)
     //     console.log(printObject(args))
 
+    // nodeIKernelMsgListener/onRichMediaUploadComplete
     if (
       args?.[1]?.[0]?.cmdName ===
       "nodeIKernelMsgListener/onRichMediaProgerssUpdate"
     ) {
       window.webContents.send("media-progerss-update", args);
     }
+
+    if (args[0]?.callbackId) {
+      const id = args[0].callbackId;
+      if (id in pendingCallbacks) {
+          window.webContents.send(pendingCallbacks[id], args[1]);
+          delete pendingCallbacks[id];
+      }
+    }
     
     return original_send.call(window.webContents, channel, ...args);
   };
 
-  if (window.webContents.__qqntim_original_object) {
-    window.webContents.__qqntim_original_object.send = patched_send;
+  window.webContents.send = patched_send;
+
+  function ipc_message(_, status, name, ...args) {
+    if (name !== "___!log" && args[0][1] && args[0][1][0] != "info") {
+        // const event = args[0][0];
+        const data = args[0][1];
+        switch (data?.[0]) {
+            case "nodeIKernelMsgService/setMsgRead":
+              const msgPeer = data[1]?.peer;
+              peer.uid = msgPeer.peerUid;
+              peer.guildId = msgPeer.guildId;
+              peer.chatType =
+                  msgPeer.chatType == 1
+                      ? "friend"
+                      : msgPeer.chatType == 2
+                      ? "group"
+                      : "others";
+              break;
+        }
+    }
+}
+
+  const ipc_message_proxy =
+        window.webContents._events["-ipc-message"]?.[0] ||
+        window.webContents._events["-ipc-message"];
+
+  const proxyEvents = new Proxy(ipc_message_proxy, {
+    // 拦截函数调用
+    apply(target, thisArg, argumentsList) {
+        /**
+        if (argumentsList[3][1] && argumentsList[3][1][0] && argumentsList[3][1][0].includes("fetchGetHitEmotionsByWord")) {
+            // 消息内容数据
+            // 消息内容
+            //output(content.msgElements[0].textElement.content)
+            //content.msgElements[0].textElement.content = "测试"
+            output("ipc-msg被拦截", argumentsList[3][1][1].inputWordInfo.word);
+        }
+         */
+        ipc_message(...argumentsList);
+        return target.apply(thisArg, argumentsList);
+    },
+  });
+
+  if (window.webContents._events["-ipc-message"][0]) {
+    window.webContents._events["-ipc-message"][0] = proxyEvents;
   } else {
-    window.webContents.send = patched_send;
+      window.webContents._events["-ipc-message"] = proxyEvents;
   }
+
 }
 
 onLoad(LiteLoader.plugins["eencode"])
 
-// module.exports = {
-//   onBrowserWindowCreated,
-// };
+module.exports = {
+  onBrowserWindowCreated,
+};

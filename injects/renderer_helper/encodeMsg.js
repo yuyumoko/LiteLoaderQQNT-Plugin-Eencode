@@ -186,8 +186,8 @@
                 console.log(`源文件: ${filePath}`);
                 console.log(`加密文件: ${encodeFile}`);
 
-                if (!peer) peer = await LLAPI.getPeer();
-                await LLAPI.sendMessage(peer, [
+                if (!peer) peer = await eencode.getPeer();
+                await _LLAPI.sendMessage(peer, [
                   {
                     type: "raw",
                     raw: fileInfo,
@@ -258,7 +258,7 @@
 
     if (hasFile) {
       console.log("只允许文件上传")
-      await LLAPI.set_editor(``);
+      await _LLAPI.set_editor(``);
       return;
     }
 
@@ -286,8 +286,8 @@
         },
       ];
       setSendButton(false);
-      await LLAPI.set_editor(``);
-      await LLAPI.sendMessage(peer, elements);
+      await _LLAPI.set_editor(``);
+      await _LLAPI.sendMessage(peer, elements);
     } catch (error) {
       setSendButton(false);
       console.error(error);

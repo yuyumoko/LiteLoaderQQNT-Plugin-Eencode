@@ -211,7 +211,7 @@
 
         let result = await decryptAES(text, cached.AESKey);
         if (!result) {
-          const peer = await LLAPI.getPeer();
+          const peer = await eencode.getPeer();
           if (peer.chatType === "group") {
             // 尝试使用群ID解密
             const AESKey = await eencode.AES_customKey(peer.chatType, peer.uid);
