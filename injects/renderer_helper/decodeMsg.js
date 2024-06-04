@@ -250,11 +250,11 @@
         fileName = fileName.split(".").slice(0, -1).join(".");
       }
 
-      fileName += fileNameExt;
+      // fileName += fileNameExt;
 
       fileInfoDiv.innerHTML += `<hr class="horizontal-dividing-line">`;
       fileInfoDiv.innerHTML += `<p style="color: aquamarine;text-align: center;">发现加密文件, 保存文件时自动解密</p>`;
-      fileInfoDiv.innerHTML += `<p style="color: cornsilk;text-align: center;">文件名: ${fileName}</p>`;
+      fileInfoDiv.innerHTML += `<p style="color: cornsilk;text-align: center;">文件名: ${fileName + fileNameExt}</p>`;
 
       // 自动解密并预览
       const fileSize = ctx.elementData.fileSize;
@@ -288,7 +288,15 @@
         fileInfoDiv.appendChild(decodeFileMsg);
 
         const downloadPath = ctx.elementData.filePath;
-        const cacheFilePath = cachePath + "\\decrypt\\" + fileName;
+        let cacheFilePath = cachePath + "\\decrypt\\" + `${fileName}${fileNameExt}`;
+
+        if (await eencode.existsSync(cacheFilePath)) {
+          const cacheFileInfo = await eencode.getFileStatSync(cacheFilePath);
+          if (cacheFileInfo.size != fileSize) { 
+            cacheFilePath = cachePath + "\\decrypt\\" + `${fileName}_${fileSize}${fileNameExt}`;
+          }
+        }
+
 
         const downloadPathExists = await eencode.existsSync(downloadPath);
         const cacheFileExists = await eencode.existsSync(cacheFilePath);
@@ -315,7 +323,7 @@
           if (allowVideo) {
             fileInfoDiv.innerHTML += await handleDecodeVideoMessage(
               cacheFilePath,
-              fileName
+              fileName + fileNameExt
             );
           }
 
