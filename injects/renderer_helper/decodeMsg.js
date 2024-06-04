@@ -206,7 +206,6 @@
         targetElement.innerHTML += `<hr class="horizontal-dividing-line">`;
         targetElement.innerHTML += `${result}`;
 
-
         addOpenWeb(targetElement.querySelectorAll(".eencode-img"));
 
         addOpenWeb(
@@ -227,8 +226,8 @@
       if (!fileElement) return;
       if (!fileElement.title.startsWith("pge-")) return;
       fileElement.parentElement.classList.add("decode-msg");
-      
-      const ctx = fileElement.__VUE__[0].ctx
+
+      const ctx = fileElement.__VUE__[0].ctx;
 
       fileElement.style.width = "100%";
       const fileInfoDiv = fileElement.querySelector(".file-info");
@@ -238,11 +237,20 @@
       const fileInfo = fileElement.__VUE__[0].props.msgElement.fileElement;
       let fileName = fileInfo.fileName;
       fileName = fileName.slice(config.encryptConfig.AES.prefix.length);
-      let fileNameExt = ctx.fileType.suffix
+      // let fileNameExt = ctx.fileType.suffix
+      // fileNameExt = fileNameExt.toLowerCase();
+      // fileName = await eencode.AES_decrypt(fileName, cached.AESKey);
+      // fileName += `.${fileNameExt}`;
 
-      fileNameExt = fileNameExt.toLowerCase();
       fileName = await eencode.AES_decrypt(fileName, cached.AESKey);
-      fileName += `.${fileNameExt}`;
+
+      let fileNameExt = "";
+      if (fileName.includes(".")) {
+        fileNameExt = `.${fileName.split(".").pop()}`;
+        fileName = fileName.split(".").slice(0, -1).join(".");
+      }
+
+      fileName += fileNameExt;
 
       fileInfoDiv.innerHTML += `<hr class="horizontal-dividing-line">`;
       fileInfoDiv.innerHTML += `<p style="color: aquamarine;text-align: center;">发现加密文件, 保存文件时自动解密</p>`;
@@ -253,10 +261,12 @@
       const fileSizeMB = fileSize / 1024 / 1024;
 
       const expireInfo = ctx.expireInfo.trim();
-      const allowImage = ["jpg", "jpeg", "png", "gif"].includes(fileNameExt);
-      const allowVideo = ["mp4", "mov", "mkv", "avi"].includes(fileNameExt);
+      const allowImage = [".jpg", ".jpeg", ".png", ".gif"].includes(
+        fileNameExt
+      );
+      const allowVideo = [".mp4", ".mov", ".mkv", ".avi"].includes(fileNameExt);
       const allowExt = allowImage || allowVideo;
-      const decodeFileFlag =  expireInfo !== "已过期" && allowExt;
+      const decodeFileFlag = expireInfo !== "已过期" && allowExt;
 
       const isLimitSize = false;
 
@@ -283,39 +293,56 @@
         const downloadPathExists = await eencode.existsSync(downloadPath);
         const cacheFileExists = await eencode.existsSync(cacheFilePath);
 
-        if (!cacheFileExists) {
-          if (!downloadPathExists) {
-            downloadPath = await ctx.downloadFile();
-          }
-
+        async function decodeFile(encodeFilePath) {
           decodeFileMsg.innerText = "正在解密...";
-          const decryptFilePath = await eencode.DecryptFile(downloadPath);
+          const decryptFilePath = await eencode.DecryptFile(encodeFilePath);
           await eencode.renameSync(decryptFilePath, cacheFilePath);
         }
 
-        decodeFileMsg.innerText = "解密成功, 右键打开文件夹可查看文件";
-        decodeFileMsg.style.color = "greenyellow";
+        async function showDecodeFile(decodeFilePath) {
+          decodeFileMsg.innerText = "解密成功, 右键打开文件夹可查看文件";
+          decodeFileMsg.style.color = "greenyellow";
 
-        // ctx.elementData.fileName = fileName;
-        ctx.elementData.filePath = cacheFilePath;
+          // ctx.elementData.fileName = fileName;
+          ctx.elementData.filePath = cacheFilePath;
 
-        if (allowImage) {
-          fileInfoDiv.innerHTML += handleDecodeImageMessage([`local:///${cacheFilePath}`])
+          if (allowImage) {
+            fileInfoDiv.innerHTML += handleDecodeImageMessage([
+              `local:///${cacheFilePath}`,
+            ]);
+          }
+
+          if (allowVideo) {
+            fileInfoDiv.innerHTML += await handleDecodeVideoMessage(
+              cacheFilePath,
+              fileName
+            );
+          }
+
+          if (await eencode.existsSync(decodeFilePath)) {
+            await eencode.deleteFileSync(decodeFilePath);
+          }
         }
 
-        if (allowVideo) {
-          fileInfoDiv.innerHTML += await handleDecodeVideoMessage(cacheFilePath, fileName);
+        if (!cacheFileExists) {
+          if (!downloadPathExists) {
+            ctx.downloadFile().then(async (downloadPath) => {
+              await decodeFile(downloadPath);
+              await showDecodeFile(downloadPath);
+            });
+          } else {
+            await decodeFile(downloadPath);
+            await showDecodeFile(downloadPath);
+          }
+        } else {
+          await showDecodeFile(downloadPath);
         }
 
-        if (downloadPathExists) {
-          await eencode.deleteFileSync(downloadPath)
-        }
 
       } else {
-
         const filePath = fileInfo.filePath;
         const fileSize = fileInfo.fileSize;
-  
+
         const autoDecryptFile = (fileState) => {
           // console.log(fileState)
           const timer = setInterval(async () => {
@@ -329,17 +356,9 @@
             }
           }, 1000);
         };
-  
+
         EnEvent.once("media-progerss-update-" + fileSize, autoDecryptFile);
-
       }
-
-
-
-      
-
-      
-
     }
   }
   return {
