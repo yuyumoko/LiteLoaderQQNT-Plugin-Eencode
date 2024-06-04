@@ -95,7 +95,7 @@
       return;
     }
     rawText = rawText.slice(4);
-    // console.log(rawText);
+    console.log(rawText);
     const isImgStart = rawText.indexOf("img-start:\n") === 0;
 
     if (isImgStart) {
@@ -255,7 +255,9 @@
 
       fileInfoDiv.innerHTML += `<hr class="horizontal-dividing-line">`;
       fileInfoDiv.innerHTML += `<p style="color: aquamarine;text-align: center;">发现加密文件, 保存文件时自动解密</p>`;
-      fileInfoDiv.innerHTML += `<p style="color: cornsilk;text-align: center;">文件名: ${fileName + fileNameExt}</p>`;
+      fileInfoDiv.innerHTML += `<p style="color: cornsilk;text-align: center;">文件名: ${
+        fileName + fileNameExt
+      }</p>`;
 
       // 自动解密并预览
       const fileSize = ctx.elementData.fileSize;
@@ -289,15 +291,18 @@
         fileInfoDiv.appendChild(decodeFileMsg);
 
         const downloadPath = ctx.elementData.filePath;
-        let cacheFilePath = cachePath + "\\decrypt\\" + `${fileName}${fileNameExt}`;
+        let cacheFilePath =
+          cachePath + "\\decrypt\\" + `${fileName}${fileNameExt}`;
 
         if (await eencode.existsSync(cacheFilePath)) {
           const cacheFileInfo = await eencode.getFileStatSync(cacheFilePath);
-          if (cacheFileInfo.size != fileSize) { 
-            cacheFilePath = cachePath + "\\decrypt\\" + `${fileName}_${fileSize}${fileNameExt}`;
+          if (cacheFileInfo.size != fileSize) {
+            cacheFilePath =
+              cachePath +
+              "\\decrypt\\" +
+              `${fileName}_${fileSize}${fileNameExt}`;
           }
         }
-
 
         const downloadPathExists = await eencode.existsSync(downloadPath);
         const cacheFileExists = await eencode.existsSync(cacheFilePath);
@@ -338,6 +343,7 @@
             ctx.downloadFile().then(async (downloadPath) => {
               await decodeFile(downloadPath);
               await showDecodeFile(downloadPath);
+              await eencode.deleteFileSync(downloadPath);
             });
           } else {
             await decodeFile(downloadPath);
@@ -346,8 +352,6 @@
         } else {
           await showDecodeFile(downloadPath);
         }
-
-
       } else {
         const filePath = fileInfo.filePath;
         const fileSize = fileInfo.fileSize;
