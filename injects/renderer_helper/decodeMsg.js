@@ -228,6 +228,7 @@
       fileElement.parentElement.classList.add("decode-msg");
 
       const ctx = fileElement.__VUE__[0].ctx;
+      console.log(ctx);
 
       fileElement.style.width = "100%";
       const fileInfoDiv = fileElement.querySelector(".file-info");
@@ -327,9 +328,9 @@
             );
           }
 
-          if (await eencode.existsSync(decodeFilePath)) {
-            await eencode.deleteFileSync(decodeFilePath);
-          }
+          // if (await eencode.existsSync(decodeFilePath)) {
+          //   await eencode.deleteFileSync(decodeFilePath);
+          // }
         }
 
         if (!cacheFileExists) {

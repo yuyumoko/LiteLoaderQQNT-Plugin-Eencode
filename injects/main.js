@@ -200,6 +200,7 @@ async function onLoad(plugin) {
   ipcHandle.fn("deleteFileSync", (event, filePath) => fs.unlinkSync(filePath));
   ipcHandle.fn("existsSync", (event, filePath) => fs.existsSync(filePath));
   ipcHandle.fn("renameSync", (event, oldPath, newPath) => fs.renameSync(oldPath, newPath));
+  ipcHandle.fn("copyFileSync", (event, oldPath, newPath) => fs.copyFileSync(oldPath, newPath));
 
   ipcHandle.fn("GetConfig", (event) => _config.load());
   ipcHandle.fn("GetDefaultConfig", (event) => Config.default);
@@ -286,7 +287,7 @@ async function onLoad(plugin) {
       const decryptName = AES.decrypt(pathInfoName, key, iv.length);
       const decryptFilePath = path.join(
         pathInfo.dir,
-        decryptName + pathInfo.ext
+        decryptName
       );
       await AES.decryptFile(filePath, decryptFilePath, key, iv);
       return decryptFilePath;
