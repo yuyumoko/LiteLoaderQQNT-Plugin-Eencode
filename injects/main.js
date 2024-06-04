@@ -14,7 +14,6 @@ const { Updater } = require("./core/updater");
 
 const { calcDirSizeStr } = require("./utils/tools");
 
-
 const peer = {};
 const pendingCallbacks = {};
 
@@ -27,6 +26,8 @@ let cached = {
   autoDecrypt: true,
   AESKey: "",
   groupEncryptMode: "",
+  autoDecryptImageLimit: 0,
+  autoDecryptVideoLimit: 0,
 };
 
 let currentRequest;
@@ -34,19 +35,19 @@ let currentRequest;
 // 加载插件时触发
 async function onLoad(plugin) {
   const cachePath = path.join(plugin.path.data, "cache");
-  
+
   const _config = new Config(plugin.path.data);
   const config = _config.load();
 
   const ipcHandle = new IpcHandle(config.manifest.slug);
 
-  const updater = new Updater(plugin.path.plugin)
-  
-  
+  const updater = new Updater(plugin.path.plugin);
+
   cached.autoDecrypt = config.autoDecrypt;
   cached.AESKey = config.encryptConfig.AES.key;
   cached.groupEncryptMode = config.groupEncryptMode;
-
+  cached.autoDecryptImageLimit = config.autoDecryptImageLimit;
+  cached.autoDecryptVideoLimit = config.autoDecryptVideoLimit;
 
   if (config.autoDeleteCache && fs.existsSync(cachePath)) {
     try {
@@ -66,6 +67,10 @@ async function onLoad(plugin) {
     fs.mkdirSync(cachePath, { recursive: true });
   }
 
+  if (!fs.existsSync(path.join(cachePath, "decrypt"))) {
+    fs.mkdirSync(path.join(cachePath, "decrypt"), { recursive: true });
+  }
+
   ipcHandle.fn("restart", (event) => {
     app.relaunch();
     app.exit(0);
@@ -76,17 +81,16 @@ async function onLoad(plugin) {
     try {
       pendingCallbacks[id] = "LL_DOWN_" + id;
     } catch (error) {
-        output(error);
-        return {};
+      output(error);
+      return {};
     }
   });
-
 
   ipcHandle.fn("OpenWeb", (event, url) => shell.openExternal(url));
   ipcHandle.fn("OpenCacheDir", (event) => shell.openPath(cachePath));
   ipcHandle.fn("GetCacheSize", (event) => calcDirSizeStr(cachePath));
 
-  ipcHandle.fn("checkUpdate", async (event) => await updater.check()); 
+  ipcHandle.fn("checkUpdate", async (event) => await updater.check());
   ipcHandle.fn("installUpdate", async (event) => await updater.install());
 
   ipcHandle.fn("uploadChkajaImage", (event, host, imgUrls, isFile = null) => {
@@ -140,7 +144,10 @@ async function onLoad(plugin) {
     }
   });
 
-  ipcHandle.fn("AbortCurrentRequest", (event) => currentRequest && currentRequest.abort());
+  ipcHandle.fn(
+    "AbortCurrentRequest",
+    (event) => currentRequest && currentRequest.abort()
+  );
 
   ipcHandle.fn("DownloadFile", async (event, url, filename) => {
     return new Promise((resolve, reject) => {
@@ -192,6 +199,7 @@ async function onLoad(plugin) {
   ipcHandle.fn("readFileSync", (event, filePath) => fs.readFileSync(filePath));
   ipcHandle.fn("deleteFileSync", (event, filePath) => fs.unlinkSync(filePath));
   ipcHandle.fn("existsSync", (event, filePath) => fs.existsSync(filePath));
+  ipcHandle.fn("renameSync", (event, oldPath, newPath) => fs.renameSync(oldPath, newPath));
 
   ipcHandle.fn("GetConfig", (event) => _config.load());
   ipcHandle.fn("GetDefaultConfig", (event) => Config.default);
@@ -224,13 +232,11 @@ async function onLoad(plugin) {
   ipcHandle.fn("AES_customKey", (event, chatType, uid) => {
     let defaultKey = cached.AESKey;
     if (chatType !== "group") {
-      return defaultKey
+      return defaultKey;
     }
 
     return AES.generateKeyByStr(`${uid}`, config.encryptConfig.AES.iv_length);
   });
-
-
 
   ipcHandle.fn(
     "EncryptFile",
@@ -249,9 +255,9 @@ async function onLoad(plugin) {
       }
 
       const pathInfo = path.parse(filePath);
-      const encryptName = `pge-${AES.encrypt(pathInfo.name, key, iv.length)}`
+      const encryptName = `pge-${AES.encrypt(pathInfo.name, key, iv.length)}`;
       const encryptFilePath = path.join(fileDir, encryptName + pathInfo.ext);
-      
+
       await AES.encryptFile(filePath, encryptFilePath, key, iv);
       return encryptFilePath;
     }
@@ -260,7 +266,6 @@ async function onLoad(plugin) {
   ipcHandle.fn(
     "DecryptFile",
     async (event, filePath, decryptType, key = null, iv = null) => {
-
       if (!key) {
         key = cached.AESKey;
       }
@@ -273,36 +278,53 @@ async function onLoad(plugin) {
 
       let pathInfoName = pathInfo.name;
       if (pathInfoName.startsWith("pge-")) {
-        pathInfoName = pathInfoName.slice(config.encryptConfig.AES.prefix.length);
+        pathInfoName = pathInfoName.slice(
+          config.encryptConfig.AES.prefix.length
+        );
       }
 
-      const decryptName = AES.decrypt(pathInfoName, key, iv.length)
-      const decryptFilePath = path.join(pathInfo.dir, decryptName + pathInfo.ext);
+      const decryptName = AES.decrypt(pathInfoName, key, iv.length);
+      const decryptFilePath = path.join(
+        pathInfo.dir,
+        decryptName + pathInfo.ext
+      );
       await AES.decryptFile(filePath, decryptFilePath, key, iv);
       return decryptFilePath;
     }
   );
-
 }
 
 // 创建窗口时触发
 function onBrowserWindowCreated(window, plugin) {
-
   const original_send = window.webContents.send;
   const patched_send = (channel, ...args) => {
     // if (args?.[1]?.[0]?.cmdName) {
     //   console.log(args?.[1]?.[0]?.cmdName);
     // }
-    //  if (args?.[1]?.[0]?.cmdName == "nodeIKernelMsgListener/onRichMediaDownloadComplete")
-    //     console.log(printObject(args))
+
     // if (args?.[1]?.[0]?.cmdName == "nodeIKernelMsgListener/onAddSendMsg")
     // console.log(args?.[1]?.[0]?.cmdName)
     //     console.log(printObject(args))
 
     // nodeIKernelMsgListener/onRichMediaUploadComplete
+    // if (
+    //   args?.[1]?.[0]?.cmdName ===
+    //   "nodeIKernelMsgListener/onRichMediaProgerssUpdate"
+    // ) {
+    //   console.log("onRichMediaProgerssUpdate !!!!!");
+    //   window.webContents.send("media-progerss-update", args);
+    // }
     if (
       args?.[1]?.[0]?.cmdName ===
-      "nodeIKernelMsgListener/onRichMediaProgerssUpdate"
+      "nodeIKernelMsgListener/onRichMediaUploadComplete"
+    ) {
+      // console.log("onRichMediaUploadComplete !!!!!");
+      window.webContents.send("media-progerss-update", args);
+    }
+
+    if (
+      args?.[1]?.[0]?.cmdName ===
+      "nodeIKernelMsgListener/onRichMediaDownloadComplete"
     ) {
       window.webContents.send("media-progerss-update", args);
     }
@@ -310,11 +332,11 @@ function onBrowserWindowCreated(window, plugin) {
     if (args[0]?.callbackId) {
       const id = args[0].callbackId;
       if (id in pendingCallbacks) {
-          window.webContents.send(pendingCallbacks[id], args[1]);
-          delete pendingCallbacks[id];
+        window.webContents.send(pendingCallbacks[id], args[1]);
+        delete pendingCallbacks[id];
       }
     }
-    
+
     return original_send.call(window.webContents, channel, ...args);
   };
 
@@ -322,32 +344,32 @@ function onBrowserWindowCreated(window, plugin) {
 
   function ipc_message(_, status, name, ...args) {
     if (name !== "___!log" && args[0][1] && args[0][1][0] != "info") {
-        // const event = args[0][0];
-        const data = args[0][1];
-        switch (data?.[0]) {
-            case "nodeIKernelMsgService/setMsgRead":
-              const msgPeer = data[1]?.peer;
-              peer.uid = msgPeer.peerUid;
-              peer.guildId = msgPeer.guildId;
-              peer.chatType =
-                  msgPeer.chatType == 1
-                      ? "friend"
-                      : msgPeer.chatType == 2
-                      ? "group"
-                      : "others";
-              break;
-        }
+      // const event = args[0][0];
+      const data = args[0][1];
+      switch (data?.[0]) {
+        case "nodeIKernelMsgService/setMsgRead":
+          const msgPeer = data[1]?.peer;
+          peer.uid = msgPeer.peerUid;
+          peer.guildId = msgPeer.guildId;
+          peer.chatType =
+            msgPeer.chatType == 1
+              ? "friend"
+              : msgPeer.chatType == 2
+              ? "group"
+              : "others";
+          break;
+      }
     }
-}
+  }
 
   const ipc_message_proxy =
-        window.webContents._events["-ipc-message"]?.[0] ||
-        window.webContents._events["-ipc-message"];
+    window.webContents._events["-ipc-message"]?.[0] ||
+    window.webContents._events["-ipc-message"];
 
   const proxyEvents = new Proxy(ipc_message_proxy, {
     // 拦截函数调用
     apply(target, thisArg, argumentsList) {
-        /**
+      /**
         if (argumentsList[3][1] && argumentsList[3][1][0] && argumentsList[3][1][0].includes("fetchGetHitEmotionsByWord")) {
             // 消息内容数据
             // 消息内容
@@ -356,29 +378,28 @@ function onBrowserWindowCreated(window, plugin) {
             output("ipc-msg被拦截", argumentsList[3][1][1].inputWordInfo.word);
         }
          */
-        ipc_message(...argumentsList);
-        return target.apply(thisArg, argumentsList);
+      ipc_message(...argumentsList);
+      return target.apply(thisArg, argumentsList);
     },
   });
 
   if (window.webContents._events["-ipc-message"][0]) {
     window.webContents._events["-ipc-message"][0] = proxyEvents;
   } else {
-      window.webContents._events["-ipc-message"] = proxyEvents;
+    window.webContents._events["-ipc-message"] = proxyEvents;
   }
 
   window.webContents.on("ipc-message-sync", (event, channel, ...args) => {
     if (channel == "___!boot") {
-        event.returnValue = {
-            enabled: true,
-            webContentsId: window.webContents.id.toString(),
-        };
+      event.returnValue = {
+        enabled: true,
+        webContentsId: window.webContents.id.toString(),
+      };
     }
   });
-
 }
 
-onLoad(LiteLoader.plugins["eencode"])
+onLoad(LiteLoader.plugins["eencode"]);
 
 module.exports = {
   onBrowserWindowCreated,

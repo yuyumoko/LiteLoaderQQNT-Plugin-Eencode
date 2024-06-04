@@ -2,6 +2,8 @@
     "autoDecrypt": true,
     "autoDeleteCache": true,
     "groupEncryptMode": "normal",
+    "autoDecryptImageLimit": 30,
+    "autoDecryptVideoLimit": 100,
     "showConfig": {
         "encryptData": true,
         "decryptPrefix": "已解密:"

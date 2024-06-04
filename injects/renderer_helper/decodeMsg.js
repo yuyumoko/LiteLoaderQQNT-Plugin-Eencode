@@ -42,10 +42,7 @@
     return false;
   }
 
-  function handleDecodeImageMessage(decode_text) {
-    decode_text = decode_text.replace(/img-start:\n/g, "");
-    decode_text = decode_text.replace(/\nimg-end/g, "");
-    const imgUrls = decode_text.split("\n");
+  function handleDecodeImageMessage(imgUrls) {
     let imgContext = "";
     for (const imgUrl of imgUrls) {
       if (!imgUrl) continue;
@@ -79,42 +76,13 @@
   async function handleDecodeVideoMessage(videoPath, videoName) {
     const videoInfo = await asyncImgChecked(videoPath);
     const videoContext = `
-    <div class="msg-preview msg-preview--video file-element vue-component eencode-video-play" tag="msg-file" expired="false" data-v-fbc9a004=""
-    data-v-2d6e7b00="" style="">
-    <div class="image no-drag vue-component" data-v-0acd8bde="" data-v-fbc9a004="" role="img" tabindex="-1"
+    <div class="msg-preview msg-preview--video file-element vue-component eencode-video-play" tag="msg-file" expired="false">
+    <div class="image no-drag vue-component" role="img" tabindex="-1"
         data-path="${videoPath}"
-        style="width: 100%; height: 100%;"><img class="image-content"
+        style="width: 100%; height: 100%;"><img class="image-content" style="width: 100%; height: 100%; object-fit: contain"
             src="${videoInfo.imgSrc}"
-            loading="eager" data-v-0acd8bde=""></div>
-    <div class="file-info-mask vue-component" data-v-a8c5b5f4="">
-        <p class="text-ellipsis" data-v-a8c5b5f4="" style="display: flex;"><span class="text-ellipsis"
-                data-v-a8c5b5f4="">
-            </span>
-            <span data-v-a8c5b5f4="">${videoName}</span>
-        </p>
-        <p data-v-a8c5b5f4="">${videoInfo.size} ${videoInfo.width}x${videoInfo.height}</p>
-    </div>
-    <div class="file-status-mask file-status-mask--show vue-component eencode-video-circle-play" data-v-b9e59d32="" data-v-fbc9a004="">
-        <div class="circle-progress file-progress vue-component" data-v-2e1f86fb="" data-v-b9e59d32=""
-            data-path="${videoPath}"
-            style="--size: 56px;">
-            <svg class="circle-progress__svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" data-v-2e1f86fb="">
-                <circle class="circle-progress__trace" cx="12" cy="12" r="9.5" stroke-opacity="0.5"
-                    stroke="var(--text_white)" fill="var(--gray-black)" fill-opacity="0.3" stroke-width="1"
-                    data-v-2e1f86fb=""></circle>
-                <circle class="circle-progress__progress" cx="12" cy="12" r="9.5" fill="none"
-                    transform="rotate(-90, 12, 12)" shape-rendering="geometricPrecision" stroke="var(--text_white)"
-                    stroke-width="1" stroke-dasharray="59.690260418206066" stroke-dashoffset="58.49645520984194"
-                    data-v-2e1f86fb=""></circle>
-            </svg>
-            <div class="circle-progress__content" data-v-2e1f86fb=""><i class="q-icon icon vue-component"
-                    data-v-00722f01="" data-v-b9e59d32="" style="--56d9c346: inherit; --f44aba40: 56px;"><svg
-                        viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M10 14.5052V9.49481C10 9.00923 10 8.76644 10.1012 8.63261C10.1894 8.51601 10.3243 8.44386 10.4702 8.43515C10.6377 8.42515 10.8397 8.55982 11.2438 8.82917L15.0015 11.3344C15.3354 11.5569 15.5023 11.6682 15.5605 11.8085C15.6113 11.9311 15.6113 12.0689 15.5605 12.1915C15.5023 12.3318 15.3354 12.4431 15.0015 12.6656L11.2438 15.1708C10.8397 15.4402 10.6377 15.5749 10.4702 15.5649C10.3243 15.5561 10.1894 15.484 10.1012 15.3674C10 15.2336 10 14.9908 10 14.5052Z"
-                            fill="white"></path>
-                    </svg></i></div>
-        </div>
+            loading="eager></div>
+    <div class="file-info-mask vue-component">
     </div>
 </div>
     `;
@@ -127,11 +95,14 @@
       return;
     }
     rawText = rawText.slice(4);
-    console.log(rawText);
+    // console.log(rawText);
     const isImgStart = rawText.indexOf("img-start:\n") === 0;
 
     if (isImgStart) {
-      rawText = handleDecodeImageMessage(rawText);
+      let decode_text = rawText.replace(/img-start:\n/g, "");
+      decode_text = decode_text.replace(/\nimg-end/g, "");
+      const imgUrls = decode_text.split("\n");
+      rawText = handleDecodeImageMessage(imgUrls);
     } else if (isComplexText(rawText)) {
       const msgList = rawText.split("\n");
       rawText = "";
@@ -146,7 +117,10 @@
             rawText += `${value}`;
             break;
           case "imag":
-            rawText += handleDecodeImageMessage(value);
+            let decode_text = value.replace(/img-start:\n/g, "");
+            decode_text = decode_text.replace(/\nimg-end/g, "");
+            const imgUrls = decode_text.split("\n");
+            rawText += handleDecodeImageMessage(imgUrls);
             break;
           case "file":
             let filename = value.split("/").pop();
@@ -252,43 +226,120 @@
       const fileElement = node.querySelector(".file-element");
       if (!fileElement) return;
       if (!fileElement.title.startsWith("pge-")) return;
+      fileElement.parentElement.classList.add("decode-msg");
+      
+      const ctx = fileElement.__VUE__[0].ctx
+
+      fileElement.style.width = "100%";
       const fileInfoDiv = fileElement.querySelector(".file-info");
       fileInfoDiv.style.display = "inline-table";
+      fileInfoDiv.style.width = "100%";
 
       const fileInfo = fileElement.__VUE__[0].props.msgElement.fileElement;
       let fileName = fileInfo.fileName;
       fileName = fileName.slice(config.encryptConfig.AES.prefix.length);
-      let fileNameExt = "";
-      if (fileName.includes(".")) {
-        fileNameExt = `.${fileName.split(".").pop()}`;
-        fileName = fileName.split(".").slice(0, -1).join(".");
-      }
+      let fileNameExt = ctx.fileType.suffix
+
+      fileNameExt = fileNameExt.toLowerCase();
       fileName = await eencode.AES_decrypt(fileName, cached.AESKey);
-      fileName += fileNameExt;
+      fileName += `.${fileNameExt}`;
 
       fileInfoDiv.innerHTML += `<hr class="horizontal-dividing-line">`;
-      fileInfoDiv.innerHTML += `<p data-v-91f9511c="">文件名: ${fileName}</p>`;
-      fileInfoDiv.innerHTML += `<p data-v-91f9511c="">保存文件时, 自动解密</p>`;
-      fileInfoDiv.innerHTML += `<p data-v-91f9511c="">右键菜单也可以解密文件</p>`;
+      fileInfoDiv.innerHTML += `<p style="color: aquamarine;text-align: center;">发现加密文件, 保存文件时自动解密</p>`;
+      fileInfoDiv.innerHTML += `<p style="color: cornsilk;text-align: center;">文件名: ${fileName}</p>`;
 
-      const filePath = fileInfo.filePath;
-      const fileSize = fileInfo.fileSize;
+      // 自动解密并预览
+      const fileSize = ctx.elementData.fileSize;
+      const fileSizeMB = fileSize / 1024 / 1024;
 
-      const autoDecryptFile = (fileState) => {
-        // console.log(fileState)
-        const timer = setInterval(async () => {
-          const isExist = await eencode.existsSync(filePath);
-          if (isExist) {
-            clearInterval(timer);
-            await eencode.DecryptFile(filePath);
-            await eencode.deleteFileSync(filePath);
-            console.log("文件解密完成");
-            showMsg("文件解密成功!");
+      const expireInfo = ctx.expireInfo.trim();
+      const allowImage = ["jpg", "jpeg", "png", "gif"].includes(fileNameExt);
+      const allowVideo = ["mp4", "mov", "mkv", "avi"].includes(fileNameExt);
+      const allowExt = allowImage || allowVideo;
+      const decodeFileFlag =  expireInfo !== "已过期" && allowExt;
+
+      const isLimitSize = false;
+
+      if (allowImage && fileSizeMB > cached.autoDecryptImageLimit) {
+        isLimitSize = true;
+      }
+
+      if (allowVideo && fileSizeMB > cached.autoDecryptVideoLimit) {
+        isLimitSize = true;
+      }
+
+      if (decodeFileFlag && !isLimitSize) {
+        fileInfoDiv.innerHTML += `<hr class="horizontal-dividing-line">`;
+        const decodeFileMsg = document.createElement("p");
+        decodeFileMsg.style.color = "darksalmon";
+        decodeFileMsg.style.textAlign = "center";
+        decodeFileMsg.classList.add("decode-file-msg-text");
+        decodeFileMsg.innerText = "正在下载资源...";
+        fileInfoDiv.appendChild(decodeFileMsg);
+
+        const downloadPath = ctx.elementData.filePath;
+        const cacheFilePath = cachePath + "\\decrypt\\" + fileName;
+
+        const downloadPathExists = await eencode.existsSync(downloadPath);
+        const cacheFileExists = await eencode.existsSync(cacheFilePath);
+
+        if (!cacheFileExists) {
+          if (!downloadPathExists) {
+            downloadPath = await ctx.downloadFile();
           }
-        }, 1000);
-      };
 
-      EnEvent.once("media-progerss-update-" + fileSize, autoDecryptFile);
+          decodeFileMsg.innerText = "正在解密...";
+          const decryptFilePath = await eencode.DecryptFile(downloadPath);
+          await eencode.renameSync(decryptFilePath, cacheFilePath);
+        }
+
+        decodeFileMsg.innerText = "解密成功, 右键打开文件夹可查看文件";
+        decodeFileMsg.style.color = "greenyellow";
+
+        // ctx.elementData.fileName = fileName;
+        ctx.elementData.filePath = cacheFilePath;
+
+        if (allowImage) {
+          fileInfoDiv.innerHTML += handleDecodeImageMessage([`local:///${cacheFilePath}`])
+        }
+
+        if (allowVideo) {
+          fileInfoDiv.innerHTML += await handleDecodeVideoMessage(cacheFilePath, fileName);
+        }
+
+        if (downloadPathExists) {
+          await eencode.deleteFileSync(downloadPath)
+        }
+
+      } else {
+
+        const filePath = fileInfo.filePath;
+        const fileSize = fileInfo.fileSize;
+  
+        const autoDecryptFile = (fileState) => {
+          // console.log(fileState)
+          const timer = setInterval(async () => {
+            const isExist = await eencode.existsSync(filePath);
+            if (isExist) {
+              clearInterval(timer);
+              await eencode.DecryptFile(filePath);
+              await eencode.deleteFileSync(filePath);
+              console.log("文件解密完成");
+              showMsg("文件解密成功!");
+            }
+          }, 1000);
+        };
+  
+        EnEvent.once("media-progerss-update-" + fileSize, autoDecryptFile);
+
+      }
+
+
+
+      
+
+      
+
     }
   }
   return {

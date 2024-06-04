@@ -18,6 +18,10 @@
   background-color: var(--overlay_active);
 }
 
+#eencode-decrypt-file-config input {
+  align-self: normal;
+}
+
 @media (prefers-color-scheme: light) {
   .text_color {
       color: black;

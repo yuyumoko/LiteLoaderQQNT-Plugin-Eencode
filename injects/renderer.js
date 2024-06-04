@@ -66,6 +66,14 @@ function observerDOM() {
         if (node.classList?.[0] === "nav-item") {
           EnEvent.emit("dom-up-nav-item", node);
         }
+
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          // 发送文件按钮
+          const send_file_msg = node.querySelector(".send-file-msg");
+          if (send_file_msg) {
+            EnEvent.emit("send-file-msg", send_file_msg);
+          }
+        }
       });
     }
   });
@@ -115,6 +123,10 @@ const encodeMsgAPI = eval(
 
 const encodeMenuAPI = eval(
   await requireApi.read("renderer_helper/encodeMenu.js", "injects")
+)();
+
+const sendEncodeFileAPI = eval(
+  await requireApi.read("renderer_helper/sendEncodeFile.js", "injects")
 )();
 
 async function destructFileElement(filePath) {
@@ -181,31 +193,13 @@ async function initSendButton() {
     observer_btn.observe(document.querySelector(".operation").parentElement, {
       childList: true,
     });
-
-    // 监听发送文件
-    const observer_file = new MutationObserver(async (mutationRecords) => {
-      const send_file_msg = document.querySelector(".send-file-msg");
-      if (send_file_msg) {
-        const send_encode_file_btn = `
-        <button
-          class="q-button vue-component eencode-send-file-button"
-          role="button"
-          bf-label-inner="true"
-          tabindex="0"
-          aria-busy="false"
-          aria-disabled="false"
-        ><span class="q-button__slot-warp">加密发送</span></button>`;
-        send_file_msg
-          .querySelector(".q-dialog-footer")
-          .insertAdjacentHTML("afterbegin", send_encode_file_btn);
-
-        // const files = send_file_msg.__VUE__[0].root.props.items;
-        // console.log(files);
-      }
-    });
-    // observer_file.observe(document.body, { childList: true, subtree: true });
   }
 }
+
+// 监听发送文件
+EnEvent.on("send-file-msg", async (node) => {
+  await sendEncodeFileAPI.initSendEncodeFile(node);
+});
 
 function decodeMsgContainer(msgContainer, interval) {
   if (msgContainer.length > 0) {
@@ -307,11 +301,12 @@ export const onSettingWindowCreated = async (view) => {
   eval(configViewJS);
 };
 
-// ipcRenderer_on("media-progerss-update", (event, args) => {
-//   const notifyInfo = args[1]?.[0]?.payload?.notifyInfo;
-//   if (notifyInfo) {
-//     EnEvent.emit("media-progerss-update-" + notifyInfo.totalSize, notifyInfo);
-//   }
-// });
+ipcRenderer_on("media-progerss-update", (event, args) => {
+  const notifyInfo = args[1]?.[0]?.payload?.notifyInfo;
+  if (notifyInfo) {
+    // console.log(`emit media-progerss-update-${notifyInfo.totalSize}`);
+    EnEvent.emit("media-progerss-update-" + notifyInfo.totalSize, notifyInfo);
+  }
+});
 
 // export { onSettingWindowCreated };

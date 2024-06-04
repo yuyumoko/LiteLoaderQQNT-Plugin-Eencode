@@ -91,6 +91,31 @@
     await eencode.OpenCacheDir();
   });
 
+  // 文件加解密设置
+  const autoDecryptImgLimitInput = view.querySelector("#auto-decrypt-img-limit");
+  const autoDecryptVideoLimit = view.querySelector("#auto-decrypt-video-limit");
+
+  autoDecryptImgLimitInput.value = config.autoDecryptImageLimit;
+  autoDecryptVideoLimit.value = config.autoDecryptVideoLimit;
+
+  autoDecryptImgLimitInput.addEventListener("input", async () => {
+    autoDecryptImgLimitInput.value = autoDecryptImgLimitInput.value.replace(/[^\d]/g,"");
+    if (autoDecryptImgLimitInput.value === "") {
+      autoDecryptImgLimitInput.value = 0;
+    }
+    await eencode.SetConfig("autoDecryptImageLimit", autoDecryptImgLimitInput.value, true);
+  });
+
+  autoDecryptVideoLimit.addEventListener("input", async () => {
+    autoDecryptVideoLimit.value = autoDecryptVideoLimit.value.replace(/[^\d]/g,"");
+    if (autoDecryptVideoLimit.value === "") {
+      autoDecryptVideoLimit.value = 0;
+    }
+    await eencode.SetConfig("autoDecryptVideoLimit", autoDecryptVideoLimit.value, true);
+  });
+
+
+  // 版本更新
   const currentVersion = view.querySelector("#eencode-current-version");
   currentVersion.setAttribute(
     "data-title",

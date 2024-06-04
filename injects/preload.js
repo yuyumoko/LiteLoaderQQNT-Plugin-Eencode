@@ -48,6 +48,8 @@ contextBridge.exposeInMainWorld(slug, {
     ipcRenderer.invoke(get_fn_key("deleteFileSync"), filePath),
   existsSync: (filePath) =>
     ipcRenderer.invoke(get_fn_key("existsSync"), filePath),
+  renameSync: (oldPath, newPath) =>
+    ipcRenderer.invoke(get_fn_key("renameSync"), oldPath, newPath),
 
   GetConfig: () => ipcRenderer.invoke(get_fn_key("GetConfig")),
   GetDefaultConfig: () => ipcRenderer.invoke(get_fn_key("GetDefaultConfig")),
