@@ -122,63 +122,63 @@
     `当前版本版本 ${config.manifest.version}`
   );
 
-  const checkUpdateBtn = view.querySelector("#eencode-checkUpdate");
-  const hasFindVersionText = view.querySelector(".has-find");
-  const updateLengthText = view.querySelector(".update-length");
-  const checkDateText = view.querySelector(".update-check-date");
+  // const checkUpdateBtn = view.querySelector("#eencode-checkUpdate");
+  // const hasFindVersionText = view.querySelector(".has-find");
+  // const updateLengthText = view.querySelector(".update-length");
+  // const checkDateText = view.querySelector(".update-check-date");
 
-  const installUpdateBtn = view.querySelector(".eencode-install-update");
+  // const installUpdateBtn = view.querySelector(".eencode-install-update");
 
-  view.querySelector(".eencode-restart").addEventListener("click", async () => {
-    await eencode.restart();
-  });
+  // view.querySelector(".eencode-restart").addEventListener("click", async () => {
+  //   await eencode.restart();
+  // });
 
-  installUpdateBtn.addEventListener("click", async () => {
-    try {
-      installUpdateBtn.innerHTML = `正在更新..`;
-      installUpdateBtn.setAttribute("aria-disabled", "true");
-      await eencode.installUpdate();
-      installUpdateBtn.setAttribute("hidden", "")
-      view.querySelector(".restart-div").attributes.removeNamedItem("hidden");
-    } catch (error) {
-      showMsg(error.message);
-    }
-  });
+  // installUpdateBtn.addEventListener("click", async () => {
+  //   try {
+  //     installUpdateBtn.innerHTML = `正在更新..`;
+  //     installUpdateBtn.setAttribute("aria-disabled", "true");
+  //     await eencode.installUpdate();
+  //     installUpdateBtn.setAttribute("hidden", "")
+  //     view.querySelector(".restart-div").attributes.removeNamedItem("hidden");
+  //   } catch (error) {
+  //     showMsg(error.message);
+  //   }
+  // });
 
-  function setFindVersion(find, updateLength) {
-    if (find) {
-      hasFindVersionText.innerHTML = `<h2 style="color: coral;">发现新的版本, 请更新!</h2>`;
-      updateLengthText.innerHTML = `有${updateLength}个文件需要更新`;
-      if (installUpdateBtn.attributes.getNamedItem("hidden")) {
-        installUpdateBtn.attributes.removeNamedItem("hidden");
-      }
-    } else {
-      hasFindVersionText.innerHTML = `<h2>已经是最新版本, 无需更新</h2>`;
-    }
-    checkDateText.innerHTML = `检查时间: ${new Date().toLocaleString()}`;
-  }
+  // function setFindVersion(find, updateLength) {
+  //   if (find) {
+  //     hasFindVersionText.innerHTML = `<h2 style="color: coral;">发现新的版本, 请更新!</h2>`;
+  //     updateLengthText.innerHTML = `有${updateLength}个文件需要更新`;
+  //     if (installUpdateBtn.attributes.getNamedItem("hidden")) {
+  //       installUpdateBtn.attributes.removeNamedItem("hidden");
+  //     }
+  //   } else {
+  //     hasFindVersionText.innerHTML = `<h2>已经是最新版本, 无需更新</h2>`;
+  //   }
+  //   checkDateText.innerHTML = `检查时间: ${new Date().toLocaleString()}`;
+  // }
 
-  async function checkUpdate() {
-    checkUpdateBtn.innerHTML = "正在检查更新..";
-    checkUpdateBtn.classList.add("is-disabled");
-    try {
-      const updateDiff = await eencode.checkUpdate();
-      console.log(updateDiff);
-      const updateLength = Object.keys(updateDiff).length;
-      const isFind = updateLength !== 0;
-      setFindVersion(isFind, updateLength);
+  // async function checkUpdate() {
+  //   checkUpdateBtn.innerHTML = "正在检查更新..";
+  //   checkUpdateBtn.classList.add("is-disabled");
+  //   try {
+  //     const updateDiff = await eencode.checkUpdate();
+  //     console.log(updateDiff);
+  //     const updateLength = Object.keys(updateDiff).length;
+  //     const isFind = updateLength !== 0;
+  //     setFindVersion(isFind, updateLength);
 
-      checkUpdateBtn.innerHTML = "重新检查更新";
-      checkUpdateBtn.classList.remove("is-disabled");
-    } catch (error) {
-      console.log(error);
-      checkUpdateBtn.innerHTML = "获取失败, 请重新获取";
-    }
-  }
+  //     checkUpdateBtn.innerHTML = "重新检查更新";
+  //     checkUpdateBtn.classList.remove("is-disabled");
+  //   } catch (error) {
+  //     console.log(error);
+  //     checkUpdateBtn.innerHTML = "获取失败, 请重新获取";
+  //   }
+  // }
 
-  checkUpdateBtn.addEventListener("click", async () => {
-    await checkUpdate();
-  });
+  // checkUpdateBtn.addEventListener("click", async () => {
+  //   await checkUpdate();
+  // });
 
-  await checkUpdate();
+  // await checkUpdate();
 })();
