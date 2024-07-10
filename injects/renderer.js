@@ -7,7 +7,28 @@ const {
 const ipcRenderer_on = eencode.ipcRenderer_en_on;
 const cachePath = dataPath + "/cache";
 
-import { apiInstance } from "./llapi/llapi.js";
+import { Contact, PlainText, Raw } from "../lib/LiteLoaderQQNT-Euphony/src/index.js";
+
+async function sendTextMessage(text) {
+  await Contact.getCurrentContact().sendMessage(new PlainText(text));
+}
+
+async function sendRawMessage(element) {
+  await Contact.getCurrentContact().sendMessage(new Raw(element));
+}
+
+function setEditor(message) {
+  try {
+      const select = window.getSelection()
+      document.querySelector(".ck.ck-content.ck-editor__editable").ckeditorInstance.setData(message)
+      const msg_list = document.querySelector(".ck.ck-content p")
+      select.collapse(msg_list.childNodes[msg_list.childNodes.length-1])
+      select.modify("move", "forward", "paragraph");
+      return true
+  } catch (error) {
+      return false
+  }
+}
 
 class EventEmitter {
   constructor() {

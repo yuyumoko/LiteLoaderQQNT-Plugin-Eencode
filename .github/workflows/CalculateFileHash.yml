@@ -9,15 +9,23 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: 检查分支
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Cache Python
+        id: cache-python
+        uses: actions/cache@v4
         with:
-          node-version: 18
+          path: C:\hostedtoolcache\windows\Python\3.11.5
+          key: ${{ runner.os }}-python-3.11.5
+
+      - name: 安装 Python
+        if: steps.cache-python.outputs.cache-hit != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.5'
 
       - name: 生成json文件
-        run: node __create_hash.js
+        run: python __create_hash.py
 
       - name: 暂存提交
         run: |

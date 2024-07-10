@@ -46,14 +46,7 @@
           };
           EnEvent.once("media-progerss-update-" + fileSize, autoDelFile);
 
-          
-          await _LLAPI.sendMessage(peer, [
-            {
-              type: "raw",
-              raw: fileInfo,
-            },
-          ]);
-
+          await sendRawMessage(fileInfo)
         });
       });
   }
