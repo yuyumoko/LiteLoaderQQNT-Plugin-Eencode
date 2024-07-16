@@ -433,11 +433,11 @@ Process.dlopen = (module, filename, flags = os.constants.dlopen.RTLD_LAZY) => {
     return originalResult;
 }
 
-ipcMain.handle('LiteLoader.euphony.getClientKey', async () => {
+ipcMain.handle('LiteLoader.eencode.euphony.getClientKey', async () => {
     return await NodeIQQNTWrapperSession.getTicketService().forceFetchClientKey('');
 });
 
-ipcMain.handle('LiteLoader.euphony.getPskey', async (event, uin, clientKey, keyIndex, domain) => {
+ipcMain.handle('LiteLoader.eencode.euphony.getPskey', async (event, uin, clientKey, keyIndex, domain) => {
     try {
         const redirectResponse = await fetch(`https://ssl.ptlogin2.qq.com/jump?ptlang=1033&clientuin=${ uin }&clientkey=${ clientKey }&u1=https%3A%2F%2F${ domain }&keyindex=${ keyIndex }`, {
             method: 'GET',
@@ -472,7 +472,7 @@ ipcMain.handle('LiteLoader.euphony.getPskey', async (event, uin, clientKey, keyI
     }
 });
 
-ipcMain.handle('LiteLoader.euphony.drawLuckyCard', async (event, uin, friendUin, pskey) => {
+ipcMain.handle('LiteLoader.eencode.euphony.drawLuckyCard', async (event, uin, friendUin, pskey) => {
     try {
         const response = await fetch('https://ti.qq.com/interactive_logo/word/proxy/domain/oidb.tim.qq.com/v3/oidbinterface/oidb_0xdd0_0?sdkappid=39998', {
             method: 'POST',

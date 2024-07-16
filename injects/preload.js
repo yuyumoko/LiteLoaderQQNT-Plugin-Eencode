@@ -171,17 +171,17 @@ contextBridge.exposeInMainWorld('euphonyNative', {
 
 contextBridge.exposeInMainWorld('euphonyInternal', {
     getClientKey: () => ipcRenderer.invoke(
-        'LiteLoader.euphony.getClientKey'
+        'LiteLoader.eencode.euphony.getClientKey'
     ),
     getPskey: (uin, clientKey, keyIndex, domain) => ipcRenderer.invoke(
-        'LiteLoader.euphony.getPskey',
+        'LiteLoader.eencode.euphony.getPskey',
         uin,
         clientKey,
         keyIndex,
         domain
     ),
     drawLuckyCard: (uin, friendUin, pskey) => ipcRenderer.invoke(
-        'LiteLoader.euphony.drawLuckyCard',
+        'LiteLoader.eencode.euphony.drawLuckyCard',
         uin,
         friendUin,
         pskey
