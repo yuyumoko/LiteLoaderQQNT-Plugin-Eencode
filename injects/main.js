@@ -248,7 +248,7 @@ async function onLoad(plugin) {
       }
 
       const pathInfo = path.parse(filePath);
-      const encryptName = `pge-${AES.encrypt(pathInfo.name + pathInfo.ext, key, iv.length)}`;
+      const encryptName = `pge-${AES.encrypt(pathInfo.name + pathInfo.ext, key, iv.length, "hex", true)}`;
       const encryptFilePath = path.join(fileDir, encryptName);
 
       await AES.encryptFile(filePath, encryptFilePath, key, iv);
