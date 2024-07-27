@@ -34,7 +34,6 @@ function encrypt(text, key, iv_length, buffType = "hex", isFile = false) {
 }
 
 function decrypt(text, key, iv_length, buffType = "hex") {
-  console.log(text, key, "decrypt");
   let iv;
   if (text.includes(":")) {
     let textParts = text.split(":");
