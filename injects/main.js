@@ -105,8 +105,9 @@ async function onLoad(plugin) {
         form.append("Countlimit", "");
         form.append("submit", "submit");
         for (let url of imgUrls) {
-          url = url.toLowerCase();
-          let filename = path.basename(url);
+          // Linux 下文件及目录区分大小写 不能将文件路径toLower 只对filename toLower 
+          // url = url.toLowerCase();
+          let filename = path.basename(url).toLowerCase();
           if (filename.endsWith(".null")) {
             const format = imageInfo(fs.readFileSync(url)).format;
             filename = filename.replace(".null", "." + format);
