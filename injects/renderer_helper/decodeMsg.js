@@ -1,4 +1,7 @@
 () => {
+  // 非win32 采用正斜杠
+  const separator = (typeof process !== 'undefined' && process.platform === 'win32') ? '\\' : '/';
+
   function bytesToSize(bytes) {
     if (bytes === 0) return "0 B";
     var k = 1024,
@@ -131,7 +134,7 @@
             }
 
             filename = filename.replace(".png", ".mp4");
-            let localPath = cachePath + "\\download\\" + filename;
+            let localPath = cachePath + separator + "download"+ separator + filename;
             let isExist = await eencode.existsSync(localPath);
             if (!isExist) {
               await eencode.DownloadFile(value, filename);
@@ -292,14 +295,14 @@
 
         const downloadPath = ctx.elementData.filePath;
         let cacheFilePath =
-          cachePath + "\\decrypt\\" + `${fileName}${fileNameExt}`;
+          cachePath + separator + "decrypt" + separator + `${fileName}${fileNameExt}`;
 
         if (await eencode.existsSync(cacheFilePath)) {
           const cacheFileInfo = await eencode.getFileStatSync(cacheFilePath);
           if (cacheFileInfo.size != fileSize) {
             cacheFilePath =
               cachePath +
-              "\\decrypt\\" +
+              separator + "decrypt" + separator +
               `${fileName}_${fileSize}${fileNameExt}`;
           }
         }

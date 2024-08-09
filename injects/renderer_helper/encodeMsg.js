@@ -92,6 +92,7 @@
     } else {
       buttonEncode.classList.remove("send--disabled");
       buttonEncode.innerText = "加密发送";
+      setEditor(""); // Linux下 点击加密发送后 输入框无法正常恢复 需要执行
       removeProcess();
     }
   }
