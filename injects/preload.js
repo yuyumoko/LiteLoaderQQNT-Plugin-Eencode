@@ -85,11 +85,3 @@ contextBridge.exposeInMainWorld(slug, {
       iv
     ),
 });
-
-
-const convertor = new Map();
-
-let { webContentsId } = ipcRenderer.sendSync('___!boot');
-if (!webContentsId) {
-    webContentsId = 2;
-}
