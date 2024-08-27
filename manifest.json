@@ -4,7 +4,7 @@
 	"name": "歪比巴卜",
 	"slug": "eencode",
 	"description": "文字图片消息加密~",
-	"version": "2.1.1",
+	"version": "2.1.2",
 	"icon": "./src/icons/icon.png",
 	"authors": [{
 		"name": "erinilis",

@@ -133,7 +133,11 @@
               const uploadResult = await uploadImage([
                 decodeURIComponent(imgSrc),
               ]);
-              addFormatMsg("imag", uploadResult[0]);
+              
+              let imageUrl = uploadResult[0];
+              imageUrl = `https://images.weserv.nl/?url=${imageUrl}`
+
+              addFormatMsg("imag", imageUrl);
               hasImage = true;
             } catch (error) {
               if (error.message.includes("reply was never sent")) {
@@ -162,80 +166,6 @@
           case "MSG-FILE":
             // 不支持
             break;
-            // try {
-            //   // 上传视频文件
-            //   const filePath = msg.lastElementChild.dataset.url
-            //     .split("\\")
-            //     .join("/");
-            //   const isVideo = filePath.toLocaleLowerCase().endsWith(".mp4");
-            //   if (isVideo) {
-            //     let uploadResult = (await uploadImage([filePath], true))[0];
-            //     if (!uploadResult) {
-            //       // Swal.fire({
-            //       //   icon: "error",
-            //       //   title: "上传失败",
-            //       //   text: "可能超出文件大小",
-            //       // });
-            //       alert("可能超出文件大小");
-            //       return;
-            //     }
-            //     uploadResult += "-mp4";
-            //     addFormatMsg("file", uploadResult);
-            //   } 
-              // else {
-              //   // 上传普通文件
-              //   const encodeFile = await eencode.EncryptFile(filePath);
-              //   const fileInfo = await destructFileElement(encodeFile);
-
-              //   console.log(`源文件: ${filePath}`);
-              //   console.log(`加密文件: ${encodeFile}`);
-
-              //   if (!peer) peer = await eencode.getPeer();
-              //   await _LLAPI.sendMessage(peer, [
-              //     {
-              //       type: "raw",
-              //       raw: fileInfo,
-              //     },
-              //   ]);
-              //   const fileSize = fileInfo.fileElement.fileSize;
-
-              //   const autoDelFile = (uploadInfo) => {
-              //     const timer = setInterval(async () => {
-              //       const msgElement = findFileMsgElement(
-              //         uploadInfo.msgElementId
-              //       );
-              //       if (msgElement) {
-              //         const statText =
-              //           msgElement.querySelector(".file-info").innerText;
-              //         if (
-              //           statText.includes("取消") ||
-              //           statText.includes("已发送")
-              //         ) {
-              //           clearInterval(timer);
-              //           await eencode.deleteFileSync(encodeFile);
-              //           console.log("删除完成: " + encodeFile);
-              //         }
-              //       }
-              //     }, 1000);
-              //   };
-              //   EnEvent.once("media-progerss-update-" + fileSize, autoDelFile);
-              //   hasFile = true;
-              // }
-
-            //   break;
-            // } catch (error) {
-            //   if (error.message.includes("reply was never sent")) {
-            //     console.log("用户取消");
-            //     return;
-            //   }
-            //   // Swal.fire({
-            //   //   icon: "error",
-            //   //   title: "上传失败",
-            //   //   text: "文件上传失败, 可能是太大, 限制10MB以内",
-            //   // });
-            //   alert("文件上传失败, 可能是太大, 限制10MB以内");
-            //   console.log(error.message);
-            // }
         }
       }
       addFormatMsg("text", "\n");
