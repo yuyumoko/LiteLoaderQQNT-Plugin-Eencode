@@ -10,6 +10,9 @@
 		"name": "erinilis",
 		"link": "https://github.com/yuyumoko"
 	}],
+	"dependencies": [
+        "euphony"
+    ],
 	"repository": {
 		"repo": "yuyumoko/LiteLoaderQQNT-Plugin-Eencode",
 		"branch": "main",
