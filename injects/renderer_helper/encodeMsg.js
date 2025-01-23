@@ -55,31 +55,39 @@
   }
 
   async function uploadImage(imgUrls, isFile) {
-    const uploadUrl = "https://img.chkaja.com/ajaximg.php";
 
-    return eencode
-      .uploadChkajaImage(uploadUrl, imgUrls, isFile)
-      .then((data) => {
-        if (data === "") {
-          // Swal.fire({
-          //   icon: "error",
-          //   title: "上传失败",
-          //   text: "图片上传失败, 请检查网络",
-          // });
-          showMsg("图片上传失败, 请检查网络");
-          return;
-        }
+    let retUrls = []
 
-        const imgUrls = Array.from(
-          new Set(
-            data.match(
-              /https:\/\/img.chkaja.com\/([0-9a-f])+\.[jpg][pni][e]?[gf]/gm
-            )
-          )
-        );
-        console.log(`imgUrls: ${imgUrls}`);
-        return imgUrls;
-      });
+    for (let url of imgUrls) {
+      retUrls.push(await eencode.uploadUguuImage(url, isFile))
+    }
+    console.log(retUrls)
+
+    return retUrls
+
+    // const uploadUrl = "https://img.chkaja.com/ajaximg.php";
+    // return eencode
+    //   .uploadChkajaImage(uploadUrl, imgUrls, isFile)
+    //   .then((data) => {
+    //     if (data === "") {
+    //       // Swal.fire({
+    //       //   icon: "error",
+    //       //   title: "上传失败",
+    //       //   text: "图片上传失败, 请检查网络",
+    //       // });
+    //       showMsg("图片上传失败, 请检查网络");
+    //       return;
+    //     }
+    //     const imgUrls = Array.from(
+    //       new Set(
+    //         data.match(
+    //           /https:\/\/img.chkaja.com\/([0-9a-f])+\.[jpg][pni][e]?[gf]/gm
+    //         )
+    //       )
+    //     );
+    //     console.log(`imgUrls: ${imgUrls}`);
+    //     return imgUrls;
+    //   });
   }
 
   function setSendButton(isSend, current, total) {

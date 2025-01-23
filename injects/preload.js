@@ -24,6 +24,8 @@ contextBridge.exposeInMainWorld(slug, {
   checkUpdate: () => ipcRenderer.invoke(get_fn_key("checkUpdate")),
   installUpdate: () => ipcRenderer.invoke(get_fn_key("installUpdate")),
 
+  uploadUguuImage: (imgUrl, isFile) =>
+    ipcRenderer.invoke(get_fn_key("uploadUguuImage"), imgUrl, isFile),
   uploadChkajaImage: (host, imgUrls, isFile) =>
     ipcRenderer.invoke(get_fn_key("uploadChkajaImage"), host, imgUrls, isFile),
 

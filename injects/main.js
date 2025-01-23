@@ -85,6 +85,58 @@ async function onLoad(plugin) {
   ipcHandle.fn("checkUpdate", async (event) => await updater.check());
   ipcHandle.fn("installUpdate", async (event) => await updater.install());
 
+  ipcHandle.fn("uploadUguuImage", (event, imgUrl, isFile) => {
+    try {
+      return new Promise((resolve, reject) => {
+        const r = request.post(
+          "https://uguu.se/upload.php",
+          {
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
+            },
+          },
+          function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+              body = JSON.parse(body);
+              resolve(body.files[0].url);
+            } else {
+              reject(error);
+            }
+          }
+        );
+        currentRequest = r;
+        const form = r.form();
+
+        let filename = path.basename(imgUrl).toLowerCase();
+        if (filename.endsWith(".null")) {
+          const format = imageInfo(fs.readFileSync(imgUrl)).format;
+          filename = filename.replace(".null", "." + format);
+        }
+
+        let imgData = fs.readFileSync(imgUrl);
+        if (isFile) {
+          imgData = Buffer.concat([PNG_HEARD, imgData]);
+          filename += ".png";
+        }
+
+        form.append("files[]", imgData, {
+          filename,
+        });
+      });
+    } catch (error) {
+      log(error);
+      dialog.showMessageBox({
+        type: "warning",
+        title: "警告",
+        message: "上传图床失败",
+        buttons: ["确定"],
+        cancelId: 1,
+      });
+      return {};
+    }
+  });
+
   ipcHandle.fn("uploadChkajaImage", (event, host, imgUrls, isFile = null) => {
     try {
       return new Promise((resolve, reject) => {
@@ -105,7 +157,7 @@ async function onLoad(plugin) {
         form.append("Countlimit", "");
         form.append("submit", "submit");
         for (let url of imgUrls) {
-          // Linux 下文件及目录区分大小写 不能将文件路径toLower 只对filename toLower 
+          // Linux 下文件及目录区分大小写 不能将文件路径toLower 只对filename toLower
           // url = url.toLowerCase();
           let filename = path.basename(url).toLowerCase();
           if (filename.endsWith(".null")) {
@@ -192,8 +244,12 @@ async function onLoad(plugin) {
   ipcHandle.fn("readFileSync", (event, filePath) => fs.readFileSync(filePath));
   ipcHandle.fn("deleteFileSync", (event, filePath) => fs.unlinkSync(filePath));
   ipcHandle.fn("existsSync", (event, filePath) => fs.existsSync(filePath));
-  ipcHandle.fn("renameSync", (event, oldPath, newPath) => fs.renameSync(oldPath, newPath));
-  ipcHandle.fn("copyFileSync", (event, oldPath, newPath) => fs.copyFileSync(oldPath, newPath));
+  ipcHandle.fn("renameSync", (event, oldPath, newPath) =>
+    fs.renameSync(oldPath, newPath)
+  );
+  ipcHandle.fn("copyFileSync", (event, oldPath, newPath) =>
+    fs.copyFileSync(oldPath, newPath)
+  );
 
   ipcHandle.fn("GetConfig", (event) => _config.load());
   ipcHandle.fn("GetDefaultConfig", (event) => Config.default);
@@ -249,7 +305,13 @@ async function onLoad(plugin) {
       }
 
       const pathInfo = path.parse(filePath);
-      const encryptName = `pge-${AES.encrypt(pathInfo.name + pathInfo.ext, key, iv.length, "hex", true)}`;
+      const encryptName = `pge-${AES.encrypt(
+        pathInfo.name + pathInfo.ext,
+        key,
+        iv.length,
+        "hex",
+        true
+      )}`;
       const encryptFilePath = path.join(fileDir, encryptName);
 
       await AES.encryptFile(filePath, encryptFilePath, key, iv);
@@ -278,10 +340,7 @@ async function onLoad(plugin) {
       }
 
       const decryptName = AES.decrypt(pathInfoName, key, iv.length);
-      const decryptFilePath = path.join(
-        pathInfo.dir,
-        decryptName
-      );
+      const decryptFilePath = path.join(pathInfo.dir, decryptName);
       await AES.decryptFile(filePath, decryptFilePath, key, iv);
       return decryptFilePath;
     }
